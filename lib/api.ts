@@ -15,7 +15,7 @@ export async function handlePlanner(request: Request, expectedHash: string | und
   const actual = await hashKey(key);
   let difference = actual.length ^ expectedHash.length;
   for (let i = 0; i < expectedHash.length; i++) difference |= actual.charCodeAt(i) ^ expectedHash.charCodeAt(i);
-  if (key.length < 6 || key.length > 256 || difference !== 0) return json({ error: "密钥无效，请重新输入" }, 401);
+  if (key.length < 32 || key.length > 256 || difference !== 0) return json({ error: "密钥无效，请重新输入" }, 401);
   try {
     if (request.method === "GET") return json(await store.read());
     if (request.method !== "POST") return json({ error: "不支持此操作" }, 405);
