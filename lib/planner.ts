@@ -79,6 +79,19 @@ export function applyOperation(tasks: Task[], op: Operation, revision: number, n
 export function beijingDate(date: Date = new Date()) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
 }
+// Escalation is one-way: changing a deadline never silently downgrades urgency.
+export function promoteUrgency(tasks: Task[], revision: number, now = new Date().toISOString()): Task[] {
+  const today = beijingDate(new Date(now));
+  let changed = false;
+  const next = tasks.map(task => {
+    if (task.kind !== "goal" || task.completedAt || task.urgent || !task.dueDate) return task;
+    const days = (Date.parse(task.dueDate) - Date.parse(today)) / 86400000;
+    if (days > (task.important ? 7 : 3)) return task;
+    changed = true;
+    return { ...task, urgent: true, version: revision, updatedAt: now };
+  });
+  return changed ? next : tasks;
+}
 export function sorted(tasks: Task[]) { return [...tasks].sort((a, b) => a.order - b.order || a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id)); }
 export function quadrant(task: Pick<Task, "important" | "urgent">) { return task.important ? (task.urgent ? 0 : 1) : (task.urgent ? 2 : 3); }
 export function makeBackup(tasks: Task[]) { return { format: "daylight-planner" as const, schemaVersion: 1 as const, exportedAt: new Date().toISOString(), timezone: "Asia/Shanghai" as const, tasks }; }

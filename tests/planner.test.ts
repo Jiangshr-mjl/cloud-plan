@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { randomUUID } from "node:crypto";
-import { applyOperation, backupSchema, beijingDate, makeBackup, quadrant, type Task, type Snapshot } from "../lib/planner";
+import { applyOperation, backupSchema, beijingDate, makeBackup, promoteUrgency, quadrant, type Task, type Snapshot } from "../lib/planner";
 import { handlePlanner, hashKey, type Store } from "../lib/api";
 
 const now = "2026-10-19T12:00:00.000Z";
@@ -31,8 +31,47 @@ test("北京时间跨日", () => { assert.equal(beijingDate(new Date("2026-10-19
 test("批量操作失败不部分修改", () => {
   const a = task(); assert.throws(() => applyOperation([a], { type: "schedule", ids: [a.id, randomUUID()], date: "2026-10-20" }, 2)); assert.equal(a.plannedDate, "2026-10-19");
 });
+test("紧急性按北京时间在 7 / 3 天边界升级，包含逾期，无日期不升级", () => {
+  const cases: [boolean, string | null, boolean][] = [
+    [true, "2026-10-28", false], [true, "2026-10-27", true],
+    [false, "2026-10-24", false], [false, "2026-10-23", true],
+    [false, "2026-10-20", true], [true, "2026-10-01", true],
+    [true, null, false], [false, null, false],
+  ];
+  for (const [important, dueDate, urgent] of cases) {
+    const original = task({ kind: "goal", plannedDate: null, important, dueDate });
+    const [result] = promoteUrgency([original], 9, "2026-10-19T16:00:00.000Z");
+    assert.equal(result.urgent, urgent); assert.equal(result.important, important);
+    assert.equal(result.dueDate, dueDate); assert.equal(original.urgent, false);
+    if (urgent) assert.equal(result.version, 9);
+  }
+});
+test("自动升级跳过已完成及子任务，不自动降级，重复执行不产生修改", () => {
+  const items = [task({ kind: "goal", plannedDate: null, completedAt: now }), task(), task({ kind: "goal", plannedDate: null, urgent: true, dueDate: null })];
+  assert.equal(promoteUrgency(items, 2, now), items);
+  const first = promoteUrgency([task({ kind: "goal", plannedDate: null })], 2, now);
+  assert.equal(promoteUrgency(first, 3, now), first);
+});
 function memory(): Store { let data: Snapshot = { revision: 0, tasks: [] }; return { async read() { return structuredClone(data); }, async write(expected, next) { if (data.revision !== expected) return false; data = structuredClone(next); return true; } }; }
 const key = "test-only-" + "k".repeat(40);
+test("读取自动升级原子保存，旧版本写入冲突，空截止日期可保存", async () => {
+  const store = memory(); const hash = await hashKey(key);
+  const goal = task({ kind: "goal", plannedDate: null, dueDate: "2000-01-01" });
+  await store.write(0, { revision: 1, tasks: [goal] });
+  const responses = await Promise.all([handlePlanner(req(), hash, store), handlePlanner(req(), hash, store)]);
+  assert.deepEqual(responses.map(r => r.status), [200, 200]);
+  assert.equal((await store.read()).revision, 2); assert.equal((await store.read()).tasks[0].urgent, true);
+  assert.equal((await handlePlanner(req({ revision: 1, operation: { type: "edit", id: goal.id, changes: { title: "旧编辑" } } }), hash, store)).status, 409);
+  const saved = await handlePlanner(req({ revision: 2, operation: { type: "edit", id: goal.id, changes: { dueDate: null, urgent: false } } }), hash, store);
+  assert.equal(saved.status, 200); assert.equal((await store.read()).tasks[0].urgent, false);
+});
+test("保存时规则优先于拖动的非紧急选择", async () => {
+  const store = memory(); const hash = await hashKey(key);
+  const goal = task({ kind: "goal", plannedDate: null, dueDate: "2000-01-01", important: false });
+  await store.write(0, { revision: 1, tasks: [goal] });
+  const response = await handlePlanner(req({ revision: 1, operation: { type: "edit", id: goal.id, changes: { urgent: false } } }), hash, store);
+  assert.equal(response.status, 200); assert.equal((await store.read()).tasks[0].urgent, true);
+});
 test("32 位密钥可验证，错误密钥及旧短密钥拒绝访问", async () => {
   const store = memory(); const shortKey = "Abcd2345".repeat(4);
   assert.equal((await handlePlanner(req(undefined, shortKey), await hashKey(shortKey), store)).status, 200);

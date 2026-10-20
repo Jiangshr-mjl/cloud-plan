@@ -20,6 +20,13 @@ const check = (label, value) => { assert.ok(value, label); record.push(label); c
 const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
 async function saveDialog() { await page.getByRole('button', { name: '保存任务', exact: true }).click(); await page.locator('dialog').waitFor({ state: 'detached' }); }
 async function nav(name) { await page.getByRole('navigation').getByRole('button', { name, exact: name !== '每日计划' }).click(); }
+async function dragGoal(title, target) {
+  const handle = await page.getByRole('button', { name: `拖动：${title}`, exact: true }).boundingBox();
+  const zone = await page.locator(`[data-quadrant="${target}"] .quadrant-heading`).boundingBox();
+  await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2);
+  await page.mouse.down(); await page.mouse.move(zone.x + zone.width / 2, zone.y + zone.height / 2, { steps: 12 }); await page.mouse.up();
+  await page.locator(`[data-quadrant="${target}"]`).getByRole('button', { name: title, exact: true }).waitFor();
+}
 try {
   check('缺失及错误密钥均返回 401', (await api(undefined, '')).status === 401 && (await api(undefined, 'wrong'.repeat(10))).status === 401);
   const initial = await api(); check('真实 D1 读取成功', initial.status === 200);
@@ -32,7 +39,10 @@ try {
   await nav('长期任务'); await page.getByRole('button', { name: '新建长期任务', exact: true }).click();
   await page.getByLabel('任务名称', { exact: true }).fill('完成论文初稿');
   await page.getByLabel('备注').fill('每天向前一步，把想法慢慢写清楚。');
-  await page.getByLabel('重要不紧急', { exact: true }).check(); await saveDialog();
+  await page.getByRole('radio', { name: '重要不紧急', exact: true }).check(); await saveDialog();
+  check('无截止日期可创建长期任务', (await api()).data.tasks.find(t => t.kind === 'goal').dueDate === null);
+  await dragGoal('完成论文初稿', 3); await dragGoal('完成论文初稿', 0); await dragGoal('完成论文初稿', 1);
+  check('桌面拖动跨象限保存分类', (await api()).data.tasks.find(t => t.kind === 'goal').urgent === false);
   await page.getByRole('button', { name: '完成论文初稿', exact: true }).click();
   await page.getByRole('button', { name: '添加子任务', exact: true }).click();
   await page.getByLabel('任务名称', { exact: true }).fill('写完论文引言');
@@ -79,7 +89,20 @@ try {
     await mobile.getByRole('navigation').getByRole('button', { name, exact: name !== '每日计划' }).click();
     check(`手机 ${name} 无横向溢出`, await mobile.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   }
-  await mobile.getByRole('navigation').getByRole('button', { name: '长期任务', exact: true }).click(); await mobile.getByRole('tab', { name: '重要不紧急', exact: true }).click();
+  await mobile.getByRole('navigation').getByRole('button', { name: '长期任务', exact: true }).click();
+  check('手机同时展示四个象限', await mobile.locator('[data-quadrant]:visible').count() === 4);
+  const touchSession = await context2.newCDPSession(mobile);
+  async function touchDrag(target) {
+    const handle = await mobile.getByRole('button', { name: '拖动：完成论文初稿', exact: true }).boundingBox();
+    const zone = await mobile.locator(`[data-quadrant="${target}"] .quadrant-heading`).boundingBox();
+    const x = handle.x + handle.width / 2, y = handle.y + handle.height / 2;
+    await touchSession.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
+    await touchSession.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: zone.x + zone.width / 2, y: zone.y + zone.height / 2 }] });
+    await touchSession.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await mobile.locator(`[data-quadrant="${target}"]`).getByRole('button', { name: '完成论文初稿', exact: true }).waitFor();
+  }
+  await touchDrag(0); await touchDrag(1); await touchSession.detach();
+  check('手机触屏拖动跨象限', (await api()).data.tasks.find(t => t.kind === 'goal').urgent === false);
   await mobile.screenshot({ path: 'tests/output/mobile-goals.png', fullPage: true });
   await mobile.getByRole('button', { name: '列表', exact: true }).click();
   await mobile.getByRole('region', { name: '长期任务列表' }).waitFor();
@@ -87,7 +110,11 @@ try {
   await mobile.getByRole('button', { name: '编辑任务', exact: true }).waitFor();
   check('手机列表视图展开后无横向溢出', await mobile.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   await mobile.screenshot({ path: 'tests/output/mobile-goals-list.png', fullPage: true }); await context2.close();
-  await nav('长期任务'); await page.screenshot({ path: 'tests/output/desktop-goals.png', fullPage: true });
+  await nav('长期任务');
+  const refreshed = page.waitForResponse(r => r.url().endsWith('/api/planner') && r.request().method() === 'GET');
+  await page.getByTitle('刷新云端数据').click(); await refreshed;
+  await page.getByText('已加载最新计划。草稿已保留，请核对后重新保存。', { exact: true }).waitFor();
+  await page.screenshot({ path: 'tests/output/desktop-goals.png', fullPage: true });
   await page.getByRole('button', { name: '列表', exact: true }).click();
   await page.getByRole('region', { name: '长期任务列表' }).waitFor();
   check('列表显示全部进行中目标', await page.locator('.list-goal-card').count() === (await api()).data.tasks.filter(t => t.kind === 'goal' && !t.completedAt).length);
@@ -105,6 +132,16 @@ try {
   await page.getByLabel('备注').fill('列表与四象限共用同一份计划。'); await saveDialog();
   check('列表视图可以编辑任务', (await api()).data.tasks.find(t => t.kind === 'goal').notes === '列表与四象限共用同一份计划。');
   await page.screenshot({ path: 'tests/output/desktop-goals-list.png', fullPage: true });
+  const deadline = days => { const d = new Date(`${today}T12:00:00Z`); d.setUTCDate(d.getUTCDate() + days); return d.toISOString().slice(0, 10); };
+  for (const [title, category, days, target] of [['准备项目汇报', '重要不紧急', 7, 0], ['整理订阅清单', '不重要不紧急', 3, 2]]) {
+    await page.getByRole('button', { name: '新建长期任务', exact: true }).click();
+    await page.getByLabel('任务名称', { exact: true }).fill(title);
+    await page.getByLabel('截止日期').fill(deadline(days)); await page.getByRole('radio', { name: category, exact: true }).check(); await saveDialog();
+    await page.getByRole('button', { name: '四象限', exact: true }).click();
+    await page.locator(`[data-quadrant="${target}"]`).getByRole('button', { name: title, exact: true }).waitFor();
+  }
+  check('截止 7 天与 3 天任务自动进入对应紧急象限', (await api()).data.tasks.filter(t => t.kind === 'goal' && t.urgent).length === 2);
+  await page.screenshot({ path: 'tests/output/desktop-matrix.png', fullPage: true });
   await nav('设置与备份');
   const exportEvent = page.waitForEvent('download'); await page.getByRole('button', { name: '导出备份', exact: true }).click(); const exported = await exportEvent;
   await exported.saveAs('tests/output/backup.json'); const restored = JSON.parse(await readFile('tests/output/backup.json', 'utf8'));
