@@ -33,6 +33,12 @@ test("批量操作失败不部分修改", () => {
 });
 function memory(): Store { let data: Snapshot = { revision: 0, tasks: [] }; return { async read() { return structuredClone(data); }, async write(expected, next) { if (data.revision !== expected) return false; data = structuredClone(next); return true; } }; }
 const key = "test-only-" + "k".repeat(40);
+test("短密钥可验证，错误短密钥与过短密钥拒绝访问", async () => {
+  const store = memory(); const shortKey = "Abcd2345";
+  assert.equal((await handlePlanner(req(undefined, shortKey), await hashKey(shortKey), store)).status, 200);
+  assert.equal((await handlePlanner(req(undefined, "Abcd2346"), await hashKey(shortKey), store)).status, 401);
+  assert.equal((await handlePlanner(req(undefined, "abc"), await hashKey("abc"), store)).status, 401);
+});
 function req(body?: unknown, secret = key) { return new Request("https://planner.test/api/planner", { method: body ? "POST" : "GET", headers: { "X-Planner-Key": secret, "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined }); }
 test("无密钥、错误密钥、未配置服务均不访问数据库", async () => {
   const store: Store = { read: async () => { throw new Error("must not read"); }, write: async () => { throw new Error("must not write"); } }; const hash = await hashKey(key);

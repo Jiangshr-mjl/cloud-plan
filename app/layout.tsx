@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "日序 · 把今天安排好",
+  title: "Cloud Plan · 让计划清晰",
   description: "每日清单与长期任务四象限，让每一步都有方向。",
   robots: { index: false, follow: false },
   icons: {
