@@ -68,9 +68,18 @@ try {
   check('完成记录可撤销完成', !(await api()).data.tasks.find(t => t.kind === 'step').completedAt);
   await nav('每日计划');
   check('取消完成后回到原计划日期的待办', await page.getByRole('button', { name: '完成：写完论文引言', exact: true }).isVisible());
+  let releaseDaily; const dailyGate = new Promise(resolve => { releaseDaily = resolve; });
+  await page.route('**/api/planner', async route => { if (route.request().method() === 'POST') await dailyGate; await route.continue(); });
   for (const name of ['整理本周文献笔记', '散步二十分钟', '给明天留一点时间']) {
     await page.getByRole('button', { name: '添加任务', exact: true }).click(); await page.getByLabel('任务名称', { exact: true }).fill(name); await saveDialog();
   }
+  check('云端未返回时可连续新增三条每日任务', (await api()).data.tasks.filter(t => t.kind === 'daily').length === 0 && await page.getByRole('button', { name: '编辑：给明天留一点时间', exact: true }).isVisible());
+  for (const direction of ['上移', '上移', '下移', '下移']) {
+    await page.getByRole('button', { name: `${direction}：给明天留一点时间`, exact: true }).click({ timeout: 1000 });
+  }
+  check('保存未返回时仍可连续上下移动新任务', await page.getByText(/正在同步 7 项操作/).isVisible());
+  releaseDaily(); await saved(); await page.unroute('**/api/planner');
+  check('排队新增和排序最终全部同步且没有重复', (await api()).data.tasks.filter(t => t.kind === 'daily').length === 3);
   await page.route('**/api/planner', route => route.request().method() === 'POST' ? route.abort('failed') : route.continue());
   await page.getByRole('button', { name: '完成：散步二十分钟', exact: true }).click();
   await page.getByText('尚未保存', { exact: true }).waitFor();
@@ -92,9 +101,10 @@ try {
   await page.getByRole('button', { name: '保存任务', exact: true }).waitFor({ state: 'visible' }); await saveDialog();
   await page.getByRole('button', { name: '添加任务', exact: true }).click(); await page.getByLabel('任务名称', { exact: true }).fill('断网后保留的小事');
   await context.setOffline(true); await page.getByRole('button', { name: '保存任务', exact: true }).click();
-  await page.locator('dialog').getByText('尚未保存', { exact: true }).waitFor();
-  check('断网不会显示保存成功且保留草稿', await page.getByLabel('任务名称', { exact: true }).inputValue() === '断网后保留的小事');
-  await context.setOffline(false); await page.locator('dialog').getByRole('button', { name: '重试保存', exact: true }).click(); await page.locator('dialog').waitFor({ state: 'detached' });
+  await page.locator('dialog').waitFor({ state: 'detached' });
+  await page.getByText('尚未保存 · 1 项操作', { exact: true }).waitFor();
+  check('断网新增保留在页面并明确标记未保存', await page.getByRole('button', { name: '编辑：断网后保留的小事', exact: true }).isVisible() && !(await api()).data.tasks.some(t => t.title === '断网后保留的小事'));
+  await context.setOffline(false); await page.getByRole('button', { name: '重试保存', exact: true }).click(); await saved();
   const context2 = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   const mobile = await context2.newPage(); await mobile.goto(base); await mobile.getByLabel('访问密钥', { exact: true }).fill(key); await mobile.getByRole('button', { name: '打开计划表', exact: true }).click();
   await mobile.getByRole('button', { name: '编辑：断网后保留的小事', exact: true }).waitFor();

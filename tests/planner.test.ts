@@ -3,8 +3,60 @@ import { test } from "node:test";
 import { randomUUID } from "node:crypto";
 import { applyOperation, backupSchema, beijingDate, makeBackup, promoteUrgency, quadrant, type Task, type Snapshot } from "../lib/planner";
 import { handlePlanner, hashKey, type Store } from "../lib/api";
+import { DailyQueue } from "../lib/daily-queue";
 
 const now = "2026-10-19T12:00:00.000Z";
+async function until(predicate: () => boolean) {
+  for (let i = 0; i < 100; i++) { if (predicate()) return; await new Promise(resolve => setTimeout(resolve, 5)); }
+  assert.fail("Queue did not settle");
+}
+function creation(t: Task) { const { version, createdAt, updatedAt, completedAt, ...value } = t; return { type: "create" as const, task: value }; }
+test("连续新增和排序立即投影，串行响应不会把界面退回旧顺序", async () => {
+  const a = task(), b = task(); let server: Snapshot = { revision: 0, tasks: [] }; let release!: () => void;
+  const gate = new Promise<void>(resolve => { release = resolve; }); let first = true, active = 0, maxActive = 0;
+  let current: any; const orders: string[][] = [];
+  const queue = new DailyQueue(server, async payload => {
+    if (!payload) return server;
+    active++; maxActive = Math.max(maxActive, active);
+    if (first) { first = false; await gate; }
+    assert.equal(payload.revision, server.revision);
+    server = { revision: server.revision + 1, tasks: applyOperation(server.tasks, payload.operation, server.revision + 1) };
+    active--; return server;
+  }, state => { current = state; orders.push([...state.snapshot.tasks].sort((x,y) => x.order-y.order).map(t => t.id)); });
+  queue.enqueue(creation(a)); queue.enqueue(creation(b)); queue.enqueue({ type: "reorder", ids: [b.id, a.id] });
+  assert.equal(server.tasks.length, 0); assert.equal(current.count, 3);
+  const start = orders.length; assert.deepEqual(orders.at(-1), [b.id, a.id]);
+  release(); await until(() => current.count === 0 && !current.active);
+  assert.equal(maxActive, 1); assert.equal(server.revision, 3);
+  for (const order of orders.slice(start)) assert.deepEqual(order, [b.id, a.id]);
+});
+test("响应丢失后重试确认已写入，不重复创建且继续后续队列", async () => {
+  let server: Snapshot = { revision: 0, tasks: [] }, lost = true; let current: any; let posts = 0;
+  const queue = new DailyQueue(server, async payload => {
+    if (!payload) return server;
+    posts++; assert.equal(payload.revision, server.revision);
+    server = { revision: server.revision + 1, tasks: applyOperation(server.tasks, payload.operation, server.revision + 1) };
+    if (lost) { lost = false; throw new Error("Response lost"); } return server;
+  }, state => { current = state; });
+  queue.enqueue(creation(task())); queue.enqueue(creation(task()));
+  await until(() => !!current.error); assert.equal(current.snapshot.tasks.length, 2);
+  await queue.retry(); await until(() => current.count === 0 && !current.active);
+  assert.equal(posts, 2); assert.equal(server.tasks.length, 2);
+});
+test("队列冲突停止保存，显式加载最新后核对重试保留另一设备数据", async () => {
+  const original = task(); let server: Snapshot = { revision: 1, tasks: [original] }; let current: any;
+  const queue = new DailyQueue(server, async payload => {
+    if (!payload) return server;
+    if (payload.revision !== server.revision) throw Object.assign(new Error("Conflict"), { status: 409 });
+    server = { revision: server.revision + 1, tasks: applyOperation(server.tasks, payload.operation, server.revision + 1) }; return server;
+  }, state => { current = state; });
+  server = { revision: 2, tasks: [{ ...original, title: "另一设备修改" }] };
+  queue.enqueue(creation(task())); await until(() => !!current.error);
+  await queue.retry(); assert.equal(current.conflict, true); assert.equal(server.revision, 2);
+  await queue.reload(); assert.equal(current.count, 1); assert.equal(current.snapshot.tasks[0].title, "另一设备修改"); assert.equal(server.revision, 2);
+  await queue.retry(); await until(() => current.count === 0 && !current.active);
+  assert.equal(server.tasks[0].title, "另一设备修改"); assert.equal(server.tasks.length, 2);
+});
 function task(overrides: Partial<Task> = {}): Task { return { id: randomUUID(), kind: "daily", parentId: null, title: "写引言", notes: "", plannedDate: "2026-10-19", dueDate: "2026-10-21", important: true, urgent: false, order: 1, completedAt: null, createdAt: now, updatedAt: now, version: 1, ...overrides }; }
 test("关联子任务改期不复制、不改变截止日期或象限", () => {
   const goal = task({ kind: "goal", plannedDate: null }); const step = task({ kind: "step", parentId: goal.id });
