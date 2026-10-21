@@ -5,11 +5,14 @@ export interface Store {
   write(expected: number, next: Snapshot): Promise<boolean>;
 }
 const headers = { "Cache-Control": "no-store, private", "X-Content-Type-Options": "nosniff" };
-function json(data: unknown, status = 200) { return Response.json(data, { status, headers }); }
 export async function hashKey(key: string) {
   return Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(key))), b => b.toString(16).padStart(2, "0")).join("");
 }
 export async function handlePlanner(request: Request, expectedHash: string | undefined, store: Store) {
+  const started = performance.now();
+  const json = (data: unknown, status = 200) => Response.json(data, {
+    status, headers: { ...headers, "Server-Timing": `app;dur=${(performance.now() - started).toFixed(1)}` },
+  });
   if (!expectedHash || !/^[a-f0-9]{64}$/.test(expectedHash)) return json({ error: "服务尚未配置访问密钥" }, 503);
   const key = request.headers.get("X-Planner-Key") ?? "";
   const actual = await hashKey(key);

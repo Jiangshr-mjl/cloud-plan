@@ -19,13 +19,15 @@ const record = [];
 const check = (label, value) => { assert.ok(value, label); record.push(label); console.log('PASS ' + label); };
 const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
 async function saveDialog() { await page.getByRole('button', { name: '保存任务', exact: true }).click(); await page.locator('dialog').waitFor({ state: 'detached' }); }
-async function nav(name) { await page.getByRole('navigation').getByRole('button', { name, exact: name !== '每日计划' }).click(); }
+async function saved() { await page.waitForFunction(() => !document.querySelector('.topbar .spin')); }
+async function nav(name) { await saved(); await page.getByRole('navigation').getByRole('button', { name, exact: name !== '每日计划' }).click(); }
 async function dragGoal(title, target) {
   const handle = await page.getByRole('button', { name: `拖动：${title}`, exact: true }).boundingBox();
   const zone = await page.locator(`[data-quadrant="${target}"] .quadrant-heading`).boundingBox();
   await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2);
   await page.mouse.down(); await page.mouse.move(zone.x + zone.width / 2, zone.y + zone.height / 2, { steps: 12 }); await page.mouse.up();
   await page.locator(`[data-quadrant="${target}"]`).getByRole('button', { name: title, exact: true }).waitFor();
+  await saved();
 }
 try {
   check('缺失及错误密钥均返回 401', (await api(undefined, '')).status === 401 && (await api(undefined, 'wrong'.repeat(10))).status === 401);
@@ -47,18 +49,35 @@ try {
   await page.getByRole('button', { name: '添加子任务', exact: true }).click();
   await page.getByLabel('任务名称', { exact: true }).fill('写完论文引言');
   await page.getByLabel('计划日期').fill(today); await saveDialog();
-  await nav('每日计划'); await page.getByRole('button', { name: '完成：写完论文引言', exact: true }).click();
-  await page.getByRole('button', { name: '取消完成：写完论文引言', exact: true }).waitFor();
+  await nav('每日计划');
+  let releaseSave; const saveGate = new Promise(resolve => { releaseSave = resolve; });
+  await page.route('**/api/planner', async route => { if (route.request().method() === 'POST') await saveGate; await route.continue(); });
+  await page.getByRole('button', { name: '完成：写完论文引言', exact: true }).click();
+  await page.getByRole('button', { name: '编辑：写完论文引言', exact: true }).waitFor({ state: 'hidden', timeout: 1000 });
+  check('云端尚未返回时完成事项立即移出待办，且未宣称保存成功', await page.getByText('正在保存…', { exact: true }).isVisible() && !(await api()).data.tasks.find(t => t.kind === 'step').completedAt);
+  await page.getByRole('heading', { name: '这一天的待办已全部完成' }).waitFor();
+  check('全部完成后保留 100% 进度', await page.locator('.progress-ring strong').innerText() === '100%');
+  releaseSave(); await saved(); await page.unroute('**/api/planner');
   await nav('长期任务'); await page.getByText('1 / 1 步已完成', { exact: true }).waitFor();
+  check('已完成子任务移出长期任务待办，进度仍然保留', await page.getByRole('button', { name: '编辑：写完论文引言', exact: true }).count() === 0);
   const linked = (await api()).data.tasks;
   check('子任务跨视图完成并更新进度，没有重复记录', linked.length === 2 && linked.find(t => t.kind === 'step').completedAt !== null);
   await nav('完成记录'); await page.getByRole('button', { name: '取消完成：写完论文引言', exact: true }).click();
   await page.getByText('这里会记下你的每一份努力', { exact: true }).waitFor();
+  await saved();
   check('完成记录可撤销完成', !(await api()).data.tasks.find(t => t.kind === 'step').completedAt);
   await nav('每日计划');
+  check('取消完成后回到原计划日期的待办', await page.getByRole('button', { name: '完成：写完论文引言', exact: true }).isVisible());
   for (const name of ['整理本周文献笔记', '散步二十分钟', '给明天留一点时间']) {
     await page.getByRole('button', { name: '添加任务', exact: true }).click(); await page.getByLabel('任务名称', { exact: true }).fill(name); await saveDialog();
   }
+  await page.route('**/api/planner', route => route.request().method() === 'POST' ? route.abort('failed') : route.continue());
+  await page.getByRole('button', { name: '完成：散步二十分钟', exact: true }).click();
+  await page.getByText('尚未保存', { exact: true }).waitFor();
+  check('完成保存失败回滚待办并保留重试', await page.getByRole('button', { name: '编辑：散步二十分钟', exact: true }).isVisible() && !(await api()).data.tasks.find(t => t.title === '散步二十分钟').completedAt);
+  await page.unroute('**/api/planner');
+  await page.getByRole('button', { name: '取消待保存操作', exact: true }).click();
+  await page.getByText('已加载最新计划。草稿已保留，请核对后重新保存。', { exact: true }).waitFor();
   await page.getByRole('button', { name: '上移：散步二十分钟', exact: true }).click();
   await page.waitForFunction(() => !document.querySelector('.topbar .spin'));
   check('顺序保存到数据库', (await api()).data.tasks.find(t => t.title === '散步二十分钟').order < (await api()).data.tasks.find(t => t.title === '整理本周文献笔记').order);
@@ -81,7 +100,7 @@ try {
   await mobile.getByRole('button', { name: '编辑：断网后保留的小事', exact: true }).waitFor();
   check('第二设备读取同步数据', true);
   await page.getByRole('button', { name: '完成：散步二十分钟', exact: true }).click();
-  await mobile.getByRole('button', { name: '取消完成：散步二十分钟', exact: true }).waitFor({ timeout: 22000 });
+  await mobile.getByRole('button', { name: '编辑：散步二十分钟', exact: true }).waitFor({ state: 'hidden', timeout: 22000 });
   check('另一设备 15 秒轮询自动更新', true);
   await page.screenshot({ path: 'tests/output/desktop-daily.png', fullPage: true });
   await mobile.screenshot({ path: 'tests/output/mobile-daily.png', fullPage: true });
@@ -100,6 +119,7 @@ try {
     await touchSession.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: zone.x + zone.width / 2, y: zone.y + zone.height / 2 }] });
     await touchSession.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
     await mobile.locator(`[data-quadrant="${target}"]`).getByRole('button', { name: '完成论文初稿', exact: true }).waitFor();
+    await mobile.waitForFunction(() => !document.querySelector('.topbar .spin'));
   }
   await touchDrag(0); await touchDrag(1); await touchSession.detach();
   check('手机触屏拖动跨象限', (await api()).data.tasks.find(t => t.kind === 'goal').urgent === false);
