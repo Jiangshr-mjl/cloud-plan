@@ -1,0 +1,17 @@
+{
+  "id": "/",
+  "name": "Cloud Plan",
+  "short_name": "Cloud Plan",
+  "description": "每日清单与长期任务四象限",
+  "lang": "zh-CN",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f5f7ff",
+  "theme_color": "#2463eb",
+  "icons": [
+    { "src": "/icons/cloud-plan-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/cloud-plan-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/cloud-plan-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
