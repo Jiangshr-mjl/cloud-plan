@@ -1,11 +1,25 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { randomUUID } from "node:crypto";
-import { applyOperation, backupSchema, beijingDate, makeBackup, promoteUrgency, quadrant, type Task, type Snapshot } from "../lib/planner";
+import { applyOperation, backupSchema, beijingDate, weekStart, isDailyTask, makeBackup, promoteUrgency, quadrant, type Task, type Snapshot } from "../lib/planner";
 import { handlePlanner, hashKey, type Store } from "../lib/api";
 import { DailyQueue } from "../lib/daily-queue";
 
 const now = "2026-10-19T12:00:00.000Z";
+test("周计划按周一归属，跨月跨年稳定且不计入每日任务", () => {
+  assert.equal(weekStart("2026-10-25"), "2026-10-19");
+  assert.equal(weekStart("2026-10-26"), "2026-10-26");
+  assert.equal(weekStart("2027-01-01"), "2026-12-28");
+  const weekly = task({ kind: "weekly" });
+  assert.equal(isDailyTask(weekly), false);
+  assert.equal(backupSchema.safeParse(makeBackup([task({ kind: "weekly", plannedDate: "2026-10-20" })])).success, false);
+  assert.equal(backupSchema.safeParse(makeBackup([task({ kind: "weekly", plannedDate: "bad" })])).success, false);
+  const [moved] = applyOperation([weekly], { type: "schedule", ids: [weekly.id], date: "2027-01-01" }, 2, now);
+  assert.equal(moved.plannedDate, "2026-12-28");
+  const [done] = applyOperation([moved], { type: "complete", id: moved.id, done: true }, 3, now);
+  assert.deepEqual(backupSchema.parse(makeBackup([done])).tasks, [done]);
+  assert.equal(applyOperation([done], { type: "complete", id: done.id, done: false }, 4, now)[0].completedAt, null);
+});
 async function until(predicate: () => boolean) {
   for (let i = 0; i < 100; i++) { if (predicate()) return; await new Promise(resolve => setTimeout(resolve, 5)); }
   assert.fail("Queue did not settle");

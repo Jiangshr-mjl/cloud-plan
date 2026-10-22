@@ -6,7 +6,7 @@ export const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(value =
 }, "日期无效");
 export const taskSchema = z.object({
   id: z.string().uuid(),
-  kind: z.enum(["daily", "goal", "step"]),
+  kind: z.enum(["daily", "goal", "step", "weekly"]),
   parentId: z.string().uuid().nullable(),
   title: z.string().trim().min(1, "请填写任务名称").max(160),
   notes: z.string().max(10000),
@@ -29,6 +29,7 @@ export const tasksSchema = z.array(taskSchema).max(10000).superRefine((tasks, ct
   for (const t of tasks) {
     if ((t.kind === "step" && (!t.parentId || !goals.has(t.parentId))) || (t.kind !== "step" && t.parentId !== null)) ctx.addIssue({ code: "custom", message: "子任务关联无效" });
     if (t.kind === "daily" && !t.plannedDate) ctx.addIssue({ code: "custom", message: "每日任务需要计划日期" });
+    if (t.kind === "weekly" && (!t.plannedDate || weekStart(t.plannedDate) !== t.plannedDate)) ctx.addIssue({ code: "custom", message: "周计划需要以周一作为所属周日期" });
     if (t.kind === "goal" && t.plannedDate) ctx.addIssue({ code: "custom", message: "请安排长期任务的子任务" });
   }
 });
@@ -66,7 +67,7 @@ export function applyOperation(tasks: Task[], op: Operation, revision: number, n
     }
     case "delete": return tasksSchema.parse(next.filter(t => t.id !== op.id && t.parentId !== op.id));
     case "schedule":
-      for (const id of new Set(op.ids)) { const task = find(id); if (task.kind === "goal") throw new Error("请安排具体子任务"); task.plannedDate = op.date; touch(task); }
+      for (const id of new Set(op.ids)) { const task = find(id); if (task.kind === "goal") throw new Error("请安排具体子任务"); task.plannedDate = task.kind === "weekly" ? weekStart(op.date) : op.date; touch(task); }
       break;
     case "reorder":
       if (new Set(op.ids).size !== op.ids.length) throw new Error("排序中有重复任务");
@@ -79,6 +80,13 @@ export function applyOperation(tasks: Task[], op: Operation, revision: number, n
 export function beijingDate(date: Date = new Date()) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
 }
+export function weekStart(value: string) {
+  const date = new Date(`${value}T12:00:00Z`);
+  if (Number.isNaN(date.valueOf())) return value;
+  date.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 6) % 7);
+  return date.toISOString().slice(0, 10);
+}
+export function isDailyTask(task: Task) { return task.kind === "daily" || task.kind === "step"; }
 // Escalation is one-way: changing a deadline never silently downgrades urgency.
 export function promoteUrgency(tasks: Task[], revision: number, now = new Date().toISOString()): Task[] {
   const today = beijingDate(new Date(now));
