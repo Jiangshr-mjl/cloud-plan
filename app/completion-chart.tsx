@@ -1,0 +1,11 @@
+"use client";
+import { useState } from 'react';
+import { beijingDate, type Task } from '@/lib/planner';
+export default function CompletionChart({tasks,today}:{tasks:Task[];today:string}) {
+ const [range,setRange]=useState('7');const [kind,setKind]=useState('all');
+ const monthly=range==='12';const n=Number(range);
+ const buckets=Array.from({length:n},(_,i)=>{const d=new Date(today+'T12:00:00Z');if(monthly){d.setUTCDate(1);d.setUTCMonth(d.getUTCMonth()-(n-1-i));}else d.setUTCDate(d.getUTCDate()-(n-1-i));const key=d.toISOString().slice(0,monthly?7:10);return {key,label:monthly?key.slice(2):key.slice(5).replace('-','/'),count:0};});
+ for(const task of tasks){if(!task.completedAt||(kind!=='all'&&task.kind!==kind))continue;const key=beijingDate(new Date(task.completedAt)).slice(0,monthly?7:10);const bucket=buckets.find(b=>b.key===key);if(bucket)bucket.count++;}
+ const total=buckets.reduce((sum,b)=>sum+b.count,0),max=Math.max(1,...buckets.map(b=>b.count));
+ return <section className="completion-chart" aria-label="完成量统计"><div className="chart-heading"><div><h2>完成量趋势</h2><p>这段时间完成 <strong>{total}</strong> 项 · {monthly?'按月':'按天'}统计</p></div><div className="chart-controls"><select aria-label="统计时间范围" value={range} onChange={e=>setRange(e.target.value)}><option value="7">近 7 天</option><option value="30">近 30 天</option><option value="12">近 12 个月</option></select><select aria-label="统计任务类型" value={kind} onChange={e=>setKind(e.target.value)}><option value="all">全部类型</option><option value="daily">每日任务</option><option value="step">长期子任务</option><option value="goal">长期任务</option><option value="weekly">周重点</option></select></div></div><div className="chart-scroll"><div className="chart-bars" style={{minWidth:n>12?720:monthly?480:280}}>{buckets.map(b=><div className="chart-column" key={b.key} aria-label={`${b.key}：${b.count} 项`} title={`${b.key}：${b.count} 项`}><div className="chart-track"><span className="chart-bar" style={{height:`${b.count/max*100}%`}}><b>{b.count}</b></span></div><span className="chart-label">{b.label}</span></div>)}</div></div>{total===0&&<p className="chart-empty">这段时间还没有完成记录。</p>}<p className="chart-footnote">按实际完成日期（北京时间）统计，与下方日期筛选独立。全部类型按记录计数，长期任务与子任务分别计入；取消完成后移出统计。</p></section>;
+}
