@@ -13,6 +13,7 @@ export const taskSchema = z.object({
   notes: z.string().max(10000),
   plannedDate: dateSchema.nullable(),
   dueDate: dateSchema.nullable(),
+  focusDate: dateSchema.nullable().optional(),
   important: z.boolean(),
   urgent: z.boolean(),
   order: z.number().int().nonnegative().max(1000000),
@@ -44,7 +45,7 @@ export const backupSchema = z.object({
   format: z.literal("daylight-planner"), schemaVersion: z.literal(1),
   exportedAt: z.string().datetime(), timezone: z.literal("Asia/Shanghai"), tasks: tasksSchema,
 }).strict();
-const editableSchema = taskSchema.pick({ title: true, notes: true, plannedDate: true, dueDate: true, important: true, urgent: true, habit: true }).partial().strict();
+const editableSchema = taskSchema.pick({ title: true, notes: true, plannedDate: true, dueDate: true, focusDate: true, important: true, urgent: true, habit: true }).partial().strict();
 export const operationSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("create"), task: taskSchema.omit({ createdAt: true, updatedAt: true, completedAt: true, version: true }) }).strict(),
   z.object({ type: z.literal("edit"), id: z.string().uuid(), changes: editableSchema }).strict(),
