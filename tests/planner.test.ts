@@ -164,3 +164,18 @@ test("导入无效备份不修改已有数据；响应禁用缓存", async () =>
   assert.equal(result.status, 400); assert.equal((await store.read()).revision, 0);
   assert.match((await handlePlanner(req(), hash, store)).headers.get("Cache-Control")!, /no-store/);
 });
+
+ test("习惯打卡幂等、补打、撤销、未来日期拒绝和备份恢复", () => {
+ const today=beijingDate();const h=task({kind:'habit',plannedDate:today,dueDate:null,habit:{checks:[],reminder:'20:00'}});
+ const checked=applyOperation([h],{type:'habitCheck',id:h.id,date:today,done:true},2);
+ const again=applyOperation(checked,{type:'habitCheck',id:h.id,date:today,done:true},3);
+ assert.deepEqual(again[0].habit?.checks,[today]);
+ assert.deepEqual(backupSchema.parse(makeBackup(again)).tasks,again);
+ assert.deepEqual(applyOperation(again,{type:'habitCheck',id:h.id,date:today,done:false},4)[0].habit?.checks,[]);
+ const tomorrow=new Date(today+'T12:00Z');tomorrow.setUTCDate(tomorrow.getUTCDate()+1);
+ assert.throws(()=>applyOperation([h],{type:'habitCheck',id:h.id,date:tomorrow.toISOString().slice(0,10),done:true},5));
+ assert.throws(()=>applyOperation([h],{type:'complete',id:h.id,done:true},5));
+ const start=new Date(today+'T12:00Z');start.setUTCDate(start.getUTCDate()-20);const old=task({kind:'habit',plannedDate:start.toISOString().slice(0,10),dueDate:null,habit:{checks:[],reminder:null}});
+ assert.equal(applyOperation([old],{type:'habitCheck',id:old.id,date:old.plannedDate!,done:true},2)[0].habit?.checks.length,1);
+ start.setUTCDate(start.getUTCDate()-1);assert.throws(()=>applyOperation([old],{type:'habitCheck',id:old.id,date:start.toISOString().slice(0,10),done:true},2));
+ });
