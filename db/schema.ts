@@ -6,3 +6,9 @@ export const planner = sqliteTable("planner", {
   revision: integer("revision").notNull().default(0),
   tasks: text("tasks").notNull().default("[]"),
 });
+
+export const workDays = sqliteTable("work_days", {
+  day: text("day").primaryKey(),
+  revision: integer("revision").notNull().default(0),
+  intervals: text("intervals").notNull().default("[]"),
+});
