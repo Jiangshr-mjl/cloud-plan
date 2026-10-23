@@ -62,10 +62,10 @@ try {
   check('已完成子任务移出长期任务待办，进度仍然保留', await page.getByRole('button', { name: '编辑：写完论文引言', exact: true }).count() === 0);
   const linked = (await api()).data.tasks;
   check('子任务跨视图完成并更新进度，没有重复记录', linked.length === 2 && linked.find(t => t.kind === 'step').completedAt !== null);
-  await nav('完成记录'); await page.getByRole('button', { name: '取消完成：写完论文引言', exact: true }).click();
+  await nav('工作记录'); await page.getByRole('button', { name: '取消完成：写完论文引言', exact: true }).click();
   await page.getByText('这里会记下你的每一份努力', { exact: true }).waitFor();
   await saved();
-  check('完成记录可撤销完成', !(await api()).data.tasks.find(t => t.kind === 'step').completedAt);
+  check('工作记录可撤销完成', !(await api()).data.tasks.find(t => t.kind === 'step').completedAt);
   await nav('每日计划');
   check('取消完成后回到原计划日期的待办', await page.getByRole('button', { name: '完成：写完论文引言', exact: true }).isVisible());
   let releaseDaily; const dailyGate = new Promise(resolve => { releaseDaily = resolve; });
@@ -114,7 +114,7 @@ try {
   check('另一设备 15 秒轮询自动更新', true);
   await page.screenshot({ path: 'tests/output/desktop-daily.png', fullPage: true });
   await mobile.screenshot({ path: 'tests/output/mobile-daily.png', fullPage: true });
-  for (const name of ['长期任务', '完成记录', '设置与备份', '每日计划']) {
+  for (const name of ['长期任务', '工作记录', '设置与备份', '每日计划']) {
     await mobile.getByRole('navigation').getByRole('button', { name, exact: name !== '每日计划' }).click();
     check(`手机 ${name} 无横向溢出`, await mobile.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   }
