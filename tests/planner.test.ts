@@ -112,7 +112,7 @@ test("紧急性按北京时间在 7 / 3 天边界升级，包含逾期，无日�
     if (urgent) assert.equal(result.version, 9);
   }
 });
-test("自动升级跳过已完成及子任务，不自动降级，重复执行不产生修改", () => {
+test("自动升级跳过已完成及每日任务，不自动降级，重复执行不产生修改", () => {
   const items = [task({ kind: "goal", plannedDate: null, completedAt: now }), task(), task({ kind: "goal", plannedDate: null, urgent: true, dueDate: null })];
   assert.equal(promoteUrgency(items, 2, now), items);
   const first = promoteUrgency([task({ kind: "goal", plannedDate: null })], 2, now);
@@ -213,4 +213,16 @@ test("子任务只允许关联长期任务或周目标，拒绝多层或其他�
     const child = task({ kind: "step", parentId: parent.id, plannedDate: null });
     assert.equal(backupSchema.safeParse(makeBackup([...existing, child])).success, false);
   }
+});
+
+test("多层项目保留关联、周目标不复制、删除清理全部后代且拒绝循环", () => {
+ const root=task({kind:"goal",plannedDate:null}); const child=task({kind:"goal",parentId:root.id,plannedDate:null}); const leaf=task({kind:"step",parentId:child.id,plannedDate:null});
+ const items=[root,child,leaf]; assert.deepEqual(backupSchema.parse(makeBackup(items)).tasks,items);
+ const weekly=applyOperation(items,{type:"edit",id:root.id,changes:{weekDate:"2026-10-19"}},2,now);
+ assert.equal(weekly.length,3); assert.equal(weekly[0].weekDate,"2026-10-19"); assert.equal(weekly[1].parentId,root.id);
+ assert.throws(()=>applyOperation(items,{type:"complete",id:root.id,done:true},2,now));
+ assert.deepEqual(applyOperation(items,{type:"delete",id:root.id},2,now),[]);
+ assert.equal(backupSchema.safeParse(makeBackup([{...root,parentId:child.id},child,leaf])).success,false);
+ assert.equal(promoteUrgency(items,2,now)[2].urgent,true);
+ assert.throws(()=>applyOperation(items,{type:"edit",id:root.id,changes:{weekDate:"2026-10-20"}},2,now));
 });

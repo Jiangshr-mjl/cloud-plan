@@ -48,8 +48,8 @@ try {
     assert.equal(snapshot.tasks.length, 4);
     assert.equal(snapshot.tasks.find(t => t.id === child.id).plannedDate, today);
     assert.equal(await page.getByRole('button', { name: `已加入 ${today} 每日计划：${child.title}`, exact: true }).isDisabled(), true);
-    await page.getByRole('navigation').getByRole('button', { name: '长期任务', exact: true }).click();
-    await page.getByRole('button', { name: '长期学习计划', exact: true }).click();
+    await page.getByRole('navigation').getByRole('button', { name: '项目管理', exact: true }).click();
+    await page.locator('summary').filter({hasText:'长期学习计划'}).click();
     await page.getByRole('button', { name: `加入 ${today} 每日计划：${step.title}`, exact: true }).click();
     await page.getByRole('button', { name: `已加入 ${today} 每日计划：${step.title}`, exact: true }).waitFor();
     assert.equal(snapshot.tasks.length, 4);

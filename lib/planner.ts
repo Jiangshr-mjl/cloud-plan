@@ -14,6 +14,7 @@ export const taskSchema = z.object({
   plannedDate: dateSchema.nullable(),
   dueDate: dateSchema.nullable(),
   focusDate: dateSchema.nullable().optional(),
+  weekDate: dateSchema.nullable().optional(),
   important: z.boolean(),
   urgent: z.boolean(),
   order: z.number().int().nonnegative().max(1000000),
@@ -29,7 +30,10 @@ export const tasksSchema = z.array(taskSchema).max(10000).superRefine((tasks, ct
   const parents = new Set(tasks.filter(t => t.kind === "goal" || t.kind === "weekly").map(t => t.id));
   if (ids.size !== tasks.length) ctx.addIssue({ code: "custom", message: "任务 ID 重复" });
   for (const t of tasks) {
-    if ((t.kind === "step" && (!t.parentId || !parents.has(t.parentId))) || (t.kind !== "step" && t.parentId !== null)) ctx.addIssue({ code: "custom", message: "子任务关联无效" });
+    if ((t.kind === "step" && (!t.parentId || !parents.has(t.parentId))) || (t.kind === "goal" && t.parentId !== null && !tasks.some(p => p.id === t.parentId && p.kind === "goal")) || (t.kind !== "step" && t.kind !== "goal" && t.parentId !== null)) ctx.addIssue({ code: "custom", message: "子任务关联无效" });
+    if (t.weekDate && (t.kind !== "goal" || weekStart(t.weekDate) !== t.weekDate)) ctx.addIssue({code:"custom",message:"项目周目标日期无效"});
+    const seen = new Set([t.id]); let parent = t.parentId;
+    while (parent) { if (seen.has(parent)) { ctx.addIssue({code:"custom",message:"项目不能循环关联"}); break; } seen.add(parent); parent = tasks.find(p => p.id === parent)?.parentId ?? null; }
     if(t.kind === "habit") {
       if(!t.habit || !t.plannedDate || t.completedAt || t.dueDate) ctx.addIssue({code:"custom",message:"习惯数据无效"});
       if(t.habit && t.plannedDate) {
@@ -45,7 +49,7 @@ export const backupSchema = z.object({
   format: z.literal("daylight-planner"), schemaVersion: z.literal(1),
   exportedAt: z.string().datetime(), timezone: z.literal("Asia/Shanghai"), tasks: tasksSchema,
 }).strict();
-const editableSchema = taskSchema.pick({ title: true, notes: true, plannedDate: true, dueDate: true, focusDate: true, important: true, urgent: true, habit: true }).partial().strict();
+const editableSchema = taskSchema.pick({ title: true, notes: true, plannedDate: true, dueDate: true, focusDate: true, important: true, urgent: true, habit: true, weekDate: true }).partial().strict();
 export const operationSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("create"), task: taskSchema.omit({ createdAt: true, updatedAt: true, completedAt: true, version: true }) }).strict(),
   z.object({ type: z.literal("edit"), id: z.string().uuid(), changes: editableSchema }).strict(),
@@ -78,10 +82,10 @@ export function applyOperation(tasks: Task[], op: Operation, revision: number, n
     case "complete": {
       const task = find(op.id);
       if(task.kind === "habit") throw new Error("请在习惯页面打卡");
-      if (op.done && (task.kind === "goal" || task.kind === "weekly") && next.some(t => t.parentId === task.id && !t.completedAt) && !op.confirmIncomplete) throw new Error("还有未完成子任务，请确认后再完成父任务");
+      if (op.done && (task.kind === "goal" || task.kind === "weekly") && next.some(t => descendantIds(next, task.id).has(t.id) && !t.completedAt) && !op.confirmIncomplete) throw new Error("还有未完成子任务，请确认后再完成父任务");
       task.completedAt = op.done ? now : null; touch(task); break;
     }
-    case "delete": return tasksSchema.parse(next.filter(t => t.id !== op.id && t.parentId !== op.id));
+    case "delete": { const ids = descendantIds(next, op.id); ids.add(op.id); return tasksSchema.parse(next.filter(t => !ids.has(t.id))); }
     case "schedule":
       for (const id of new Set(op.ids)) { const task = find(id); if (task.kind === "habit") throw new Error("请在习惯页面管理日期"); if (task.kind === "goal") throw new Error("请安排具体子任务"); task.plannedDate = task.kind === "weekly" ? weekStart(op.date) : op.date; touch(task); }
       break;
@@ -108,7 +112,7 @@ export function promoteUrgency(tasks: Task[], revision: number, now = new Date()
   const today = beijingDate(new Date(now));
   let changed = false;
   const next = tasks.map(task => {
-    if (task.kind !== "goal" || task.completedAt || task.urgent || !task.dueDate) return task;
+    if ((task.kind !== "goal" && task.kind !== "step") || task.completedAt || task.urgent || !task.dueDate) return task;
     const days = (Date.parse(task.dueDate) - Date.parse(today)) / 86400000;
     if (days > (task.important ? 7 : 3)) return task;
     changed = true;
@@ -121,3 +125,9 @@ export function quadrant(task: Pick<Task, "important" | "urgent">) { return task
 export function makeBackup(tasks: Task[]) { return { format: "daylight-planner" as const, schemaVersion: 1 as const, exportedAt: new Date().toISOString(), timezone: "Asia/Shanghai" as const, tasks }; }
 
 export function habitDate(start:string,offset:number){const d=new Date(start+"T12:00:00Z");if(Number.isNaN(d.valueOf()))return start;d.setUTCDate(d.getUTCDate()+offset);return d.toISOString().slice(0,10);}
+
+export function descendantIds(tasks: Task[], id: string) {
+  const ids = new Set<string>(); const queue = [id];
+  for (let i=0; i<queue.length; i++) for (const task of tasks) if (task.parentId === queue[i] && !ids.has(task.id) && task.id !== id) { ids.add(task.id); queue.push(task.id); }
+  return ids;
+}
