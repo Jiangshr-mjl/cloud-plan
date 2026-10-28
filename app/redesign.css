@@ -25,3 +25,5 @@ body{font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}.cloud-il
 @media(max-width:640px){.week-strip>button{min-height:64px}.habit-days button{min-height:58px}.work-summary strong{font-variant-numeric:tabular-nums}}
 
 .weekly-goal{border-bottom:1px solid var(--line);min-width:0}.weekly-goal>.task-row{border-bottom:0}.weekly-subtask-heading{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;padding-bottom:12px}.weekly-subtask-heading .text-button,.schedule-step{min-height:44px;display:inline-flex;align-items:center;gap:6px}.weekly-subtasks{border-left:2px solid var(--line);padding-left:12px;margin:0 0 16px 8px}.weekly-subtasks .task-row{flex-wrap:wrap}.weekly-subtasks .task-main{min-width:0;flex:1 1 calc(100% - 44px)}.weekly-subtasks .row-tools{flex-wrap:wrap;margin-left:auto}.schedule-step:disabled{color:var(--muted);opacity:.75}.goal-detail .row-tools{flex-wrap:wrap}
+
+.brand-icon img{display:block;width:100%;height:100%;object-fit:contain;border-radius:inherit}
