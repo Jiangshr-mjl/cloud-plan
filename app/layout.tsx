@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "./redesign.css";
 
 export const metadata: Metadata = {
   title: "Cloud Plan · 让计划清晰",
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
   },
 };
 
-export const viewport: Viewport = { themeColor: "#2463eb" };
+export const viewport: Viewport = { themeColor: "#2167b5" };
 
 export default function RootLayout({
   children,

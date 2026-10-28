@@ -2,10 +2,10 @@
 import { useState } from 'react';
 import { beijingDate, type Task } from '@/lib/planner';
 const TYPES = [
- {kind:'daily',label:'每日任务',color:'#2463eb'},
- {kind:'step',label:'长期子任务',color:'#159b83'},
- {kind:'goal',label:'长期任务',color:'#8b5bd6'},
- {kind:'weekly',label:'周重点',color:'#df921e'},
+ {kind:'daily',label:'每日任务',color:'#2167b5'},
+ {kind:'step',label:'长期子任务',color:'#40858c'},
+ {kind:'goal',label:'长期任务',color:'#7975a0'},
+ {kind:'weekly',label:'周重点',color:'#ae772c'},
 ] as const;
 export default function CompletionChart({tasks,today,selected, onSelect,kind,onKindChange}:{tasks:Task[];today:string;selected:string;onSelect:(value:string)=>void;kind:string;onKindChange:(value:string)=>void}) {
  const [range,setRange]=useState('7');
