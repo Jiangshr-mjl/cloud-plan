@@ -226,3 +226,13 @@ test("多层项目保留关联、周目标不复制、删除清理全部后代�
  assert.equal(promoteUrgency(items,2,now)[2].urgent,true);
  assert.throws(()=>applyOperation(items,{type:"edit",id:root.id,changes:{weekDate:"2026-10-20"}},2,now));
 });
+
+test("项目移动保留后代与计划，拒绝循环和非项目目标", () => {
+ const a=task({kind:"goal",plannedDate:null,weekDate:"2026-10-19"}), b=task({kind:"goal",plannedDate:null}), child=task({kind:"step",parentId:a.id}); const items=[a,b,child];
+ const moved=applyOperation(items,{type:"moveProject",id:a.id,parentId:b.id},2,now);
+ assert.equal(moved[0].parentId,b.id);assert.equal(moved[0].weekDate,a.weekDate);assert.deepEqual(moved[2],child);assert.equal(items[0].parentId,null);
+ assert.throws(()=>applyOperation(moved,{type:"moveProject",id:b.id,parentId:a.id},3,now));
+ assert.throws(()=>applyOperation(items,{type:"moveProject",id:a.id,parentId:a.id},3,now));
+ assert.throws(()=>applyOperation(items,{type:"moveProject",id:a.id,parentId:child.id},3,now));
+ assert.equal(applyOperation(moved,{type:"moveProject",id:a.id,parentId:null},3,now)[0].parentId,null);
+});

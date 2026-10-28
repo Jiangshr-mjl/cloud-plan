@@ -51,6 +51,7 @@ export const backupSchema = z.object({
 }).strict();
 const editableSchema = taskSchema.pick({ title: true, notes: true, plannedDate: true, dueDate: true, focusDate: true, important: true, urgent: true, habit: true, weekDate: true }).partial().strict();
 export const operationSchema = z.discriminatedUnion("type", [
+  z.object({type:z.literal("moveProject"),id:z.string().uuid(),parentId:z.string().uuid().nullable()}).strict(),
   z.object({ type: z.literal("create"), task: taskSchema.omit({ createdAt: true, updatedAt: true, completedAt: true, version: true }) }).strict(),
   z.object({ type: z.literal("edit"), id: z.string().uuid(), changes: editableSchema }).strict(),
   z.object({ type: z.literal("complete"), id: z.string().uuid(), done: z.boolean(), confirmIncomplete: z.boolean().optional() }).strict(),
@@ -68,6 +69,16 @@ export function applyOperation(tasks: Task[], op: Operation, revision: number, n
   const find = (id: string) => { const task = next.find(t => t.id === id); if (!task) throw new Error("任务已不存在，请刷新后重试"); return task; };
   const touch = (task: Task) => { task.updatedAt = now; task.version = revision; };
   switch (op.type) {
+    case "moveProject": {
+      const project = find(op.id);
+      if (project.kind !== "goal" || project.completedAt) throw new Error("只能移动进行中的项目");
+      if (op.parentId) {
+        const parent = find(op.parentId);
+        if (parent.kind !== "goal" || parent.completedAt) throw new Error("请选择进行中的目标项目");
+        if (parent.id === project.id || descendantIds(next,project.id).has(parent.id)) throw new Error("不能移入自身或下级项目");
+      }
+      project.parentId = op.parentId; touch(project); break;
+    }
     case "create":
       if (next.some(t => t.id === op.task.id)) throw new Error("任务已存在，请刷新核对，避免重复添加");
       next.push({ ...op.task, completedAt: null, createdAt: now, updatedAt: now, version: revision });

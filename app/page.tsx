@@ -43,6 +43,7 @@ export default function Planner() {
   const [historyDate, setHistoryDate] = useState("");
   const [historyKind, setHistoryKind] = useState("all");
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dropProject, setDropProject] = useState<string | null>(null);
   const [dropQuadrant, setDropQuadrant] = useState<number | null>(null);
   const drag = useRef<{ id: string; revision: number; x: number; y: number; moved: boolean } | null>(null);
   const [goalView, setGoalView] = useState<"quadrants" | "list">("list");
@@ -123,7 +124,7 @@ export default function Planner() {
     if (inFlight.current || quickQueue.current) return;
     inFlight.current = true; ++generation.current; setBusy(true); setError(""); setConflict(false); setNotice(""); pending.current = { operation, revision, after };
     const previous = snapshot;
-    const optimistic = !!previous && (operation.type === "complete" || operation.type === "schedule" || operation.type === "reorder" || operation.type === "delete" || (operation.type === "edit" && !after));
+    const optimistic = !!previous && (operation.type === "moveProject" || operation.type === "complete" || operation.type === "schedule" || operation.type === "reorder" || operation.type === "delete" || (operation.type === "edit" && !after));
     if (optimistic) {
       try { setSnapshot({ revision: previous.revision, tasks: promoteUrgency(applyOperation(previous.tasks, operation, revision + 1), revision + 1) }); } catch { /* The server returns the authoritative validation error. */ }
     }
@@ -213,14 +214,29 @@ export default function Planner() {
     e.currentTarget.setPointerCapture(e.pointerId);
     drag.current = { id: task.id, revision: snapshot?.revision ?? 0, x: e.clientX, y: e.clientY, moved: false };
   }
+  function projectDropTarget(x: number, y: number, id: string) {
+    const target = document.elementFromPoint(x,y)?.closest<HTMLElement>("[data-project-id]")?.dataset.projectId;
+    const parent = tasks.find(t => t.id === target);
+    return parent && !parent.completedAt && parent.id !== id && !descendantIds(tasks,id).has(parent.id) ? parent.id : null;
+  }
   function moveDrag(e: ReactPointerEvent<HTMLButtonElement>) {
     const current = drag.current; if (!current) return;
     if (Math.hypot(e.clientX - current.x, e.clientY - current.y) < 6 && !current.moved) return;
-    current.moved = true; setDraggingId(current.id); setDropQuadrant(dropTarget(e.clientX, e.clientY));
+    current.moved = true; setDraggingId(current.id);
+    if (tasks.find(t => t.id === current.id)?.kind === "goal") {
+      setDropProject(projectDropTarget(e.clientX,e.clientY,current.id));
+      if (e.clientY > window.innerHeight - 80) window.scrollBy(0,18); else if(e.clientY < 80) window.scrollBy(0,-18);
+    } else setDropQuadrant(dropTarget(e.clientX, e.clientY));
   }
-  function cancelDrag() { drag.current = null; setDraggingId(null); setDropQuadrant(null); }
+  function cancelDrag() { drag.current = null; setDraggingId(null); setDropQuadrant(null); setDropProject(null); }
   function finishDrag(e: ReactPointerEvent<HTMLButtonElement>) {
-    const current = drag.current; const target = dropTarget(e.clientX, e.clientY); cancelDrag();
+    const current = drag.current;
+    if (current && tasks.find(t => t.id === current.id)?.kind === "goal") {
+      const parentId = projectDropTarget(e.clientX,e.clientY,current.id); cancelDrag();
+      if (current.moved && parentId && tasks.find(t => t.id === current.id)?.parentId !== parentId) void mutate({type:"moveProject",id:current.id,parentId},undefined,current.revision);
+      return;
+    }
+    const target = dropTarget(e.clientX, e.clientY); cancelDrag();
     if (!current?.moved || target === null) return;
     const task = tasks.find(t => t.id === current.id); if (!task || quadrant(task) === target) return;
     const q = QUADRANTS[target];
@@ -244,10 +260,10 @@ export default function Planner() {
     const steps = tasks.filter(t => ids.has(t.id) && t.kind === "step");
     const children = sorted(tasks.filter(t => t.parentId === project.id));
     const doneSteps = children.filter(t => t.kind === "step" && t.completedAt);
-    return <details className="project-card" key={project.id}><summary><ChevronRight className="project-chevron" size={16}/><FolderOpen size={19}/><strong>{project.title}</strong><span>{steps.filter(t => t.completedAt).length}/{steps.length} 子任务完成{project.completedAt ? " · 已完成" : ""}</span></summary><div className="project-content">{project.notes && <p>{project.notes}</p>}<div className="project-actions">
+    return <details data-project-id={project.id} className={`project-card ${dropProject === project.id ? "project-drop-target" : ""} ${draggingId === project.id ? "project-dragging" : ""}`} key={project.id}><summary><ChevronRight className="project-chevron" size={16}/><FolderOpen size={19}/><strong>{project.title}</strong>{!project.completedAt && <button className="drag-handle project-drag-handle" aria-label={`移动项目：${project.title}`} title="拖入其他项目成为子项目；也可在项目设置中选择所属项目" disabled={disabled} onClick={e => {e.preventDefault();e.stopPropagation();}} onPointerDown={e => {e.stopPropagation();beginDrag(e,project);}} onPointerMove={moveDrag} onPointerUp={finishDrag} onPointerCancel={cancelDrag} onLostPointerCapture={cancelDrag} onKeyDown={e => {if(e.key === "Escape") cancelDrag();}}><GripVertical size={18}/></button>}<span>{steps.filter(t => t.completedAt).length}/{steps.length} 子任务完成{project.completedAt ? " · 已完成" : ""}</span></summary><div className="project-content">{project.notes && <p>{project.notes}</p>}<div className="project-actions">
       <button disabled={disabled} onClick={() => newTask("goal",project.id)}>添加子项目</button><button disabled={disabled} onClick={() => newTask("step",project.id)}>添加子任务</button>
       <button disabled={disabled || !!project.completedAt || project.weekDate === currentWeek} onClick={() => void mutate({type:"edit",id:project.id,changes:{weekDate:currentWeek}})}>{project.weekDate === currentWeek ? "已加入周目标" : "加入周目标"}</button>
-      <details className="project-settings"><summary>项目设置<ChevronDown size={14}/></summary><div className="project-settings-actions">{project.weekDate && <button disabled={disabled} onClick={() => void mutate({type:"edit",id:project.id,changes:{weekDate:null}})}>移出周目标（{project.weekDate}）</button>}
+      <details className="project-settings"><summary>项目设置<ChevronDown size={14}/></summary><div className="project-settings-actions">{!project.completedAt && <label className="project-parent-picker">所属项目<select aria-label={`所属项目：${project.title}`} disabled={disabled} value={project.parentId ?? ""} onChange={e => void mutate({type:"moveProject",id:project.id,parentId:e.target.value || null})}><option value="">顶层项目</option>{tasks.filter(t => t.kind === "goal" && !t.completedAt && t.id !== project.id && !ids.has(t.id)).map(t => <option value={t.id} key={t.id}>{t.title}</option>)}</select></label>}{project.weekDate && <button disabled={disabled} onClick={() => void mutate({type:"edit",id:project.id,changes:{weekDate:null}})}>移出周目标（{project.weekDate}）</button>}
       <button disabled={disabled} onClick={() => edit(project)}>编辑项目</button><button disabled={disabled} onClick={() => toggle(project)}>{project.completedAt ? "重新打开项目" : "完成项目"}</button><button disabled={disabled} className="danger" onClick={() => remove(project)}>删除项目</button></div></details>
     </div>{children.filter(t => !t.completedAt || (view === "history" && t.kind === "goal")).map(t => t.kind === "goal" ? projectCard(t) : row(t,undefined,0,true,true))}
       {doneSteps.length > 0 && <details className="completed-subtasks"><summary><ChevronRight size={15}/><span>已完成子任务</span><span className="completed-count">{doneSteps.length}</span></summary>{doneSteps.map(t => row(t,undefined,0,true))}</details>}</div></details>;
