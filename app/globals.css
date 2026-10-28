@@ -53,3 +53,12 @@ body{font-size:14px}.app-shell{display:block}.sidebar{position:sticky;top:0;inse
 .records-section-title{font-size:24px;color:#19345a;margin:8px 0}.work-days summary{font-size:15px;font-weight:600;cursor:pointer;color:#19345a}.work-days[open] summary{margin-bottom:15px}
 
 .task-row.is-focus{background:#fff8e7;box-shadow:inset 3px 0 #e9a52b}.task-row.is-focus .task-title{font-weight:700;color:#805410}.focus-button{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:44px;min-height:44px;border:1px solid transparent;border-radius:10px;color:#71809a;font-size:11px;flex-shrink:0}.focus-button:hover{background:#fff0cb;color:#956116}.focus-button.selected{color:#956116;background:#ffedbd;border-color:#f0d185}.task-meta .focus-badge{color:#956116;font-weight:600}.focus-button:focus-visible{outline:2px solid #2463eb;outline-offset:2px}@media(max-width:640px){.focus-button span{display:none}.task-row .row-tools{gap:3px}}
+
+/* Keep supporting explanations available without crowding the main views. */
+.content{padding-bottom:32px}
+.disclosure-note{margin-top:16px;color:#657895;font-size:11px;line-height:1.8}
+.disclosure-note summary{cursor:pointer;width:fit-content;padding:4px 0}
+.disclosure-note p{margin-top:8px;max-width:760px}
+.disclosure-note p svg{vertical-align:middle;margin-right:5px}
+.dialog-footer{justify-content:flex-end}
+.progress-card>p{margin-bottom:0}
