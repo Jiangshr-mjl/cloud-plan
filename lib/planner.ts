@@ -26,10 +26,10 @@ export type Task = z.infer<typeof taskSchema>;
 export type Snapshot = { revision: number; tasks: Task[] };
 export const tasksSchema = z.array(taskSchema).max(10000).superRefine((tasks, ctx) => {
   const ids = new Set(tasks.map(t => t.id));
-  const goals = new Set(tasks.filter(t => t.kind === "goal").map(t => t.id));
+  const parents = new Set(tasks.filter(t => t.kind === "goal" || t.kind === "weekly").map(t => t.id));
   if (ids.size !== tasks.length) ctx.addIssue({ code: "custom", message: "任务 ID 重复" });
   for (const t of tasks) {
-    if ((t.kind === "step" && (!t.parentId || !goals.has(t.parentId))) || (t.kind !== "step" && t.parentId !== null)) ctx.addIssue({ code: "custom", message: "子任务关联无效" });
+    if ((t.kind === "step" && (!t.parentId || !parents.has(t.parentId))) || (t.kind !== "step" && t.parentId !== null)) ctx.addIssue({ code: "custom", message: "子任务关联无效" });
     if(t.kind === "habit") {
       if(!t.habit || !t.plannedDate || t.completedAt || t.dueDate) ctx.addIssue({code:"custom",message:"习惯数据无效"});
       if(t.habit && t.plannedDate) {
@@ -78,7 +78,7 @@ export function applyOperation(tasks: Task[], op: Operation, revision: number, n
     case "complete": {
       const task = find(op.id);
       if(task.kind === "habit") throw new Error("请在习惯页面打卡");
-      if (op.done && task.kind === "goal" && next.some(t => t.parentId === task.id && !t.completedAt) && !op.confirmIncomplete) throw new Error("还有未完成子任务，请确认后再完成长期任务");
+      if (op.done && (task.kind === "goal" || task.kind === "weekly") && next.some(t => t.parentId === task.id && !t.completedAt) && !op.confirmIncomplete) throw new Error("还有未完成子任务，请确认后再完成父任务");
       task.completedAt = op.done ? now : null; touch(task); break;
     }
     case "delete": return tasksSchema.parse(next.filter(t => t.id !== op.id && t.parentId !== op.id));

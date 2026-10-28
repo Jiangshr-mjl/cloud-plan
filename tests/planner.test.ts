@@ -179,3 +179,38 @@ test("导入无效备份不修改已有数据；响应禁用缓存", async () =>
  assert.equal(applyOperation([old],{type:'habitCheck',id:old.id,date:old.plannedDate!,done:true},2)[0].habit?.checks.length,1);
  start.setUTCDate(start.getUTCDate()-1);assert.throws(()=>applyOperation([old],{type:'habitCheck',id:old.id,date:start.toISOString().slice(0,10),done:true},2));
  });
+
+
+test("周目标子任务创建、安排、完成与备份保留同一条关联记录", () => {
+  const weekly = task({ kind: "weekly", plannedDate: "2026-10-19" });
+  const step = task({ kind: "step", parentId: weekly.id, plannedDate: null });
+  let items = applyOperation([weekly], creation(step), 2, now);
+  assert.equal(isDailyTask(items[1]), true);
+  for (const date of ["2026-10-20", "2026-10-20", "2026-10-22"]) {
+    items = applyOperation(items, { type: "schedule", ids: [step.id], date }, 3, now);
+    assert.equal(items.length, 2);
+    assert.equal(items[1].plannedDate, date);
+    assert.equal(items[1].parentId, weekly.id);
+    assert.equal(items[1].dueDate, step.dueDate);
+    assert.equal(items[0].plannedDate, "2026-10-19");
+  }
+  assert.throws(() => applyOperation(items, { type: "complete", id: weekly.id, done: true }, 4, now));
+  const forced = applyOperation(items, { type: "complete", id: weekly.id, done: true, confirmIncomplete: true }, 4, now);
+  assert.equal(forced[1].completedAt, null);
+  items = applyOperation(items, { type: "complete", id: step.id, done: true }, 4, now);
+  assert.equal(items[1].completedAt, now);
+  assert.equal(items[0].completedAt, null);
+  assert.deepEqual(backupSchema.parse(makeBackup(items)).tasks, items);
+  assert.equal(applyOperation(items, { type: "complete", id: step.id, done: false }, 5, now)[1].completedAt, null);
+  assert.deepEqual(applyOperation(items, { type: "delete", id: weekly.id }, 5, now), []);
+});
+test("子任务只允许关联长期任务或周目标，拒绝多层或其他类型关联", () => {
+  const goal = task({ kind: "goal", plannedDate: null });
+  const parents = [task(), task({ kind: "step", parentId: goal.id }), task({ kind: "habit", dueDate: null, habit: { checks: [], reminder: null } })];
+  for (const parent of parents) {
+    const existing = [goal, parent];
+    assert.equal(backupSchema.safeParse(makeBackup(existing)).success, true);
+    const child = task({ kind: "step", parentId: parent.id, plannedDate: null });
+    assert.equal(backupSchema.safeParse(makeBackup([...existing, child])).success, false);
+  }
+});
