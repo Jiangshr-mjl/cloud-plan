@@ -11,12 +11,12 @@ export const metadata: Metadata = {
   appleWebApp: { capable: true, title: "Cloud Plan", statusBarStyle: "default" },
   icons: {
     icon: [
-      { url: "/favicon.svg?v=2", type: "image/svg+xml" },
-      { url: "/icons/cloud-plan-32.png", type: "image/png", sizes: "32x32" },
-      { url: "/favicon.ico?v=2", sizes: "16x16 32x32 48x48 256x256" },
+      { url: "/favicon.svg?v=3", type: "image/svg+xml" },
+      { url: "/icons/cloud-plan-32.png?v=3", type: "image/png", sizes: "32x32" },
+      { url: "/favicon.ico?v=3", sizes: "16x16 32x32 48x48 256x256" },
     ],
-    shortcut: "/favicon.ico?v=2",
-    apple: { url: "/apple-touch-icon.png?v=2", sizes: "180x180", type: "image/png" },
+    shortcut: "/favicon.ico?v=3",
+    apple: { url: "/apple-touch-icon.png?v=3", sizes: "180x180", type: "image/png" },
   },
 };
 
