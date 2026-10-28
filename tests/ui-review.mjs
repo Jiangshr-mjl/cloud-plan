@@ -10,7 +10,7 @@ await page.addInitScript(()=>localStorage.setItem('daylight.access-key','ui-revi
 await mkdir('tests/output/ui-review',{recursive:true});const results=[];
 for(const width of [1360,820,390,360]){
  await page.setViewportSize({width,height:1000});await page.goto('http://127.0.0.1:5173');await page.getByRole('navigation').waitFor();await page.evaluate(()=>document.fonts.ready);
- for(const name of ['每日计划','项目管理','21 天习惯','工作记录','设置与备份']){
+ for(const name of ['每日计划','项目管理','21天习惯养成','工作记录','设置与备份']){
  await page.getByRole('navigation').getByRole('button',{name,exact:name!=='每日计划'}).click();await page.waitForTimeout(150);
  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth);assert.equal(overflow,false,`${width} ${name}: page overflow`);results.push({width,name,overflow});
  await page.screenshot({path:`tests/output/ui-review/${width}-${name}.png`,fullPage:true});
@@ -18,7 +18,7 @@ for(const width of [1360,820,390,360]){
   await page.getByRole('button',{name:'项目列表',exact:true}).click();await page.locator('.projects-list').waitFor();
   await page.getByRole('button',{name:'子任务四象限',exact:true}).click();await page.locator('.priority-matrix').waitFor();
  }
- if(name==='21 天习惯'){
+ if(name==='21天习惯养成'){
   await page.getByRole('button',{name:'编辑',exact:true}).click();await page.locator('.habit-editor').waitFor();
   assert.equal(await page.locator('.habit-editor').getByRole('textbox').first().inputValue(),'每日阅读');
   await page.getByRole('button',{name:'取消',exact:true}).click();
