@@ -37,17 +37,18 @@ try {
     const child = snapshot.tasks.find(t => t.parentId === weekly.id);
     assert.ok(child);
     assert.equal(child.plannedDate, null);
-    const scheduleName = `加入 ${today} 每日计划：${child.title}`;
     // A failed save must roll back and remain retryable without duplicating records.
     failNext = true;
-    await page.getByRole('button', { name: scheduleName, exact: true }).click();
+    await page.getByRole('button', { name: `拖动安排日期：${child.title}`, exact: true }).focus();
+    await page.keyboard.press('Enter');
+    await page.getByRole('button', { name: `安排到 ${today}`, exact: true }).click();
     await page.getByText('测试保存失败', { exact: true }).waitFor();
     assert.equal(snapshot.tasks.find(t => t.id === child.id).plannedDate, null);
     await page.getByRole('button', { name: '重试保存', exact: true }).click();
-    await page.getByRole('button', { name: `已加入 ${today} 每日计划：${child.title}`, exact: true }).waitFor();
+    await page.getByText(`已加入 ${today} 的每日计划`, { exact: true }).waitFor();
     assert.equal(snapshot.tasks.length, 4);
     assert.equal(snapshot.tasks.find(t => t.id === child.id).plannedDate, today);
-    assert.equal(await page.getByRole('button', { name: `已加入 ${today} 每日计划：${child.title}`, exact: true }).isDisabled(), true);
+    assert.equal(snapshot.tasks.filter(t => t.id === child.id).length, 1);
     await page.getByRole('navigation').getByRole('button', { name: '项目管理', exact: true }).click();
     await page.locator('summary').filter({hasText:'长期学习计划'}).click();
     await page.getByRole('button', { name: `加入 ${today} 每日计划：${step.title}`, exact: true }).click();
