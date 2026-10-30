@@ -34,6 +34,7 @@ try {for(const width of [320,360,390,430,640,768,1360]) {
   assert.deepEqual(clipped,[],`${width}: clipped content`);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   await page.screenshot({path:`tests/output/quadrants/${width}.png`,fullPage:true});
+  await page.getByRole('button',{name:`任务详情：${tasks[1].title}`,exact:true}).click();
   await page.getByRole('button',{name:`编辑：${tasks[1].title}`,exact:true}).click();
   await page.locator('dialog').waitFor();
   await page.close();
