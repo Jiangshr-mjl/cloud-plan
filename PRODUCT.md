@@ -1,4 +1,6 @@
 # Cloud Plan
+
+> 2026-10-30：用户已批准新蓝白工作台 UI。最新视觉依据及实施边界见 [UI 定稿交接](docs/ui-approved-2026-10-30/README.md)；本文件的旧“晴空编辑部”外观描述不再约束新 UI，产品功能与数据语义继续保留。欢迎口号更新为“让计划灵活，让生活轻盈。”。
 <!-- impeccable:product-schema 1 -->
 ## Platform
 web

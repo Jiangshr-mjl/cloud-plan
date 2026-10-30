@@ -1,0 +1,27 @@
+Mode: built-in image_gen
+References: https://fluent2.microsoft.design/layout ; https://atlassian.design/foundations/border ; https://atlassian.design/foundations/elevation/
+Use case: ui-mockup / style-transfer.
+Edit the supplied Cloud Plan quadrant interface. USER REJECTS THE FOUR DIFFERENT HUES: make a genuinely elegant strictly BLUE AND WHITE design. Preserve the balanced toolbar layout and actual product content, but radically refine the quadrant styling, not merely change four pastel fills to four blue fills.
+
+Design references interpreted as principles: Microsoft Fluent 2 spacing and proximity for clear grouping; Atlassian boundary and surface hierarchy with restrained neutral borders and blue interactive emphasis. Original design, not a copy of their logos. This should feel like a refined real productivity app: confident clean white space, navy text, precise blue details, no candy-colored dashboard.
+
+KEEP: global top nav and Cloud Plan logo, active 项目管理, page heading 项目管理. Title at left with + 新建项目 right. Next row: 项目列表 / 子任务四象限 active / 时间轴 LEFT, 安排日期 2026/10/30 RIGHT. Third row full-width 5 evenly distributed filters 全部 / 重要且紧急 / 重要不紧急 / 不重要但紧急 / 不重要不紧急, 全部 selected pale blue. Keep correct task labels, dates, one task per quadrant, oval project bubbles including upper-right nested subproject. Full-bleed landscape screenshot, same approximate aspect as input, crisp legible Chinese sans-serif and no perspective or surrounding device. Bottom tiny 演示数据.
+
+PALETTE STRICT: pure white #FFFFFF dominates. Page canvas very pale cool neutral #F6F8FC, ink #172B4D, muted text #65758B. One accent cobalt #2463DB, light accent #ECF3FF, neutral dividing border #C6D3E3. No coral, red, orange, yellow, cream, green, teal, purple, or warm tints ANYWHERE in the matrix, dots, folders, menus or filters. Sync status dot may become blue too. No gradients, no grain or paper texture, no glow.
+
+MATRIX DESIGN:
+Keep equal 2x2 geometry but replace four colored pastel cards and thick colorful top stripes with FOUR WHITE PANES. REMOVE all thick top stripes entirely. Use a CLEAR 20px cool pale-blue-grey cross-shaped GUTTER between panes, crisp medium-light blue-grey one-pixel borders around each pane, 8px corners. Gutter stands out against white panes so boundaries are instantly obvious. The pane surfaces should all be the SAME PURE WHITE. Do not repeat the original nearly invisible white-on-white boundary.
+Each pane has a compact approximately 58px HEADER BAND, background #F4F7FC, a fine blue-grey bottom rule. Left a small consistent blue-outline square marker numbered 01 / 02 / 03 / 04, then dark navy semibold category title; right small 1 项任务 and quiet ellipsis. These SAME STYLE blue markers replace rainbow category dots. No colored dots elsewhere. Headers aligned and repeated consistently.
+The four exact titles are 重要且紧急 / 重要不紧急 / 不重要但紧急 / 不重要不紧急.
+Generous white space in pane content. Bubble group should be natural and neatly balanced, compact about 75% pane width and 65% remaining pane height, NEVER stretching to fill every pixel.
+
+PROJECT BUBBLES AND TASK CARDS:
+All project oval grouping bubbles use identical ultralight blue fill #F4F8FF with clearly visible thin blue-grey outlines #BDD0EB. Oval remains a true ellipse, not rounded rectangle. Labels near upper central area: small muted blue outline folder + 完成个人作品集, little quiet count if needed. Nested upper-right inner ellipse labelled 内容与视觉设计, slightly stronger pale-blue fill, balanced size.
+Tasks are CLEAN WHITE rectangular floating cards with 7px corners, fine neutral-blue border, very restrained tiny ambient shadow. No colored tinted cards and no heavy drop shadows. Navy task titles, grey-blue secondary date. Small outline checkbox at left, no solid filled bullet.
+Top left card 准备周末分享, date 11/01.
+Top right card 整理三个代表项目, date 11/09, inside 内容与视觉设计 nested bubble.
+Bottom left 预约设备检修, date 10/31.
+Bottom right 整理旅行灵感, no date.
+Keep group labels and cards inside bubbles with enough padding, no overlap. Lower and upper panes equal height. A high level of typographic craft, thin refined icons and strong clean alignment.
+
+Final impression: predominantly WHITE, calm blue precision, highly readable four-pane separation created by spacing and borders; polished professional app. NOT four differently shaded blue rectangles, NOT rainbow, NOT thick blue bars, NOT dark navy panels, NOT glass or decorative gradients. No annotations or explanatory design copy.

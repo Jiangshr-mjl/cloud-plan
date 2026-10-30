@@ -1,0 +1,19 @@
+Mode: built-in image_gen
+Use case: ui-mockup / precise-object-edit.
+Input image roles: the blue-white Cloud Plan UI screenshot is the EDIT TARGET. The user's hand-drawn black coordinate-axis sketch is a STRUCTURAL REFERENCE, not the literal color or stroke thickness to copy.
+Redesign only the quadrant workspace of the Cloud Plan screenshot to follow the user's coordinate-axis sketch. User explicitly wants AXES AND DASHED LINES to express quadrant boundaries. Keep strictly BLUE AND WHITE visual style. Preserve the balanced header and all navigation, labels, dates, actual project/task data and nested bubble mechanism.
+
+REMOVE: the 01/02/03/04 numbered badges entirely. Remove all four independent rectangular quadrant cards, individual pane borders, separate title bands, header divider rules and cross-shaped gutters. Do not retain the previous four-card visual structure.
+
+NEW WORKSPACE: one unified white coordinate plane occupying the same main workspace rectangle, with generous inset around it. A thin dashed rounded rectangular OUTER PERIMETER in muted medium blue-grey #8CA7C8, elegant 1.5px-equivalent strokes and regular 9px dashes with 7px gaps; this is the only enclosing outline. Inside, a continuous SOLID vertical axis and a continuous SOLID horizontal axis cross exactly at center and subdivide into four equal open regions. Axis lines 2px-equivalent #6687AE, clear but refined, NOT heavy black lines. Vertical axis has small arrowhead pointing UP at its top end; horizontal axis has small arrowhead pointing LEFT at its left end, matching user's sketch. Opposite ends are plain. Two clear small labels: near upper arrow "重要程度", near left arrow "紧急程度". Increasing importance is UP, increasing urgency LEFT. Axis endpoints meet the perimeter cleanly; labels inset neatly with tiny white text backing where needed. NO arrow at right or bottom. The overall structure must look like the user's diagram translated into polished modern application UI, not a grid of cards or a chart with numeric scales. No tick marks or origin label, no numeric quadrant badges.
+
+HEADINGS AND DATA:
+Place compact dark navy quadrant titles at the upper-left inside each of the four open quadrants, inset away from the axes and dashed perimeter: top-left 重要且紧急, top-right 重要不紧急, bottom-left 不重要但紧急, bottom-right 不重要不紧急. Small muted 1 项任务 next to each. Tiny small dots in BLUE only allowed before heading, all same brand blue; do NOT copy the red/yellow dots from sketch. No other category accent colors.
+Top-left ellipse project 完成个人作品集, task 准备周末分享, date 11/01.
+Top-right ellipse project 完成个人作品集, nested inner ellipse 内容与视觉设计, task 整理三个代表项目, date 11/09.
+Bottom-left ellipse project 完成个人作品集, task 预约设备检修, date 10/31.
+Bottom-right ellipse project 完成个人作品集, task 整理旅行灵感, no date.
+Project bubbles: true ellipses, extremely light blue fill #F3F7FE, delicate blue outline #B8CDE9; blue outline folders, readable navy labels. Maintain nested project bubbles. All groups fully stay within respective quadrants, with at least 24px clearance from axes and outer perimeter. Shrink bubbles slightly if needed to provide clear breathing room, do not squash labels or overlap lines.
+Task cards: white, refined small corner radius, subtle short shadow, small outline circle checkbox, bold navy title and blue-grey date. No changes to content. Place groups naturally and evenly, centered within their quadrant content space.
+
+KEEP EVERYTHING ABOVE WORKSPACE: logo Cloud Plan, nav 项目管理 selected, page title, + 新建项目, left view switch 项目列表 / 子任务四象限 / 时间轴, right 安排日期 2026/10/30, full-width filters 全部 / 重要且紧急 / 重要不紧急 / 不重要但紧急 / 不重要不紧急. Bottom 演示数据. Palette white/light blue/navy only, no rainbow colors, no black heavy strokes, no new sidebars or explanatory prose. Match original screenshot aspect and legible Chinese typography, front-on high-resolution UI concept, no device frame, no annotations.

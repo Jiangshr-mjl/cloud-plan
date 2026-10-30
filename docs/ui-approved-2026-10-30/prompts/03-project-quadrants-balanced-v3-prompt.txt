@@ -1,0 +1,30 @@
+Mode: built-in image_gen
+Use case: ui-mockup / precise-object-edit.
+Edit the supplied Cloud Plan project quadrants concept into a more balanced and clearer final design. User requests: controls above the grid feel piled up on the right and unbalanced; quadrant boundaries are unclear and colors unattractive. Redesign ONLY the page header/control area below the global navigation and the matrix visual treatment. Preserve product content, all four tasks, project nesting and functional labels.
+
+OUTPUT: one polished high resolution flat front-on desktop website mockup, same landscape aspect and canvas size as input. No red annotations or external explanation.
+
+INVARIANTS: keep the entire existing global top navigation unchanged (cloud logo, Cloud Plan, 每日计划, 项目管理 active, 21天习惯, 工作记录, 设置, 已同步), same blue brand action color, navy Chinese sans-serif, clear typography. Preserve the actual oval project-bubble mechanism and nested subproject bubble, actual task names, dates, counts. Keep card text horizontal, legible, never clipped. Keep bottom 演示数据.
+
+REBALANCE HEADER:
+Use consistent left/right alignment to main workspace edges, 80–90px outer margins.
+Row 1: page title 项目管理 aligned LEFT and the blue + 新建项目 action aligned RIGHT. Nothing else crammed against this button.
+Row 2: a compact 3-option horizontal view switch aligned LEFT directly under title: 项目列表 / 子任务四象限 (active with blue underline) / 时间轴. The date field 安排日期 2026/10/30 aligned RIGHT on this same row. Clear spacing between these two groups; neither centered arbitrarily nor piled at upper right.
+Row 3: one full-width restrained segmented filter strip, FIVE equal width evenly spaced cells, labels 全部 / 重要且紧急 / 重要不紧急 / 不重要但紧急 / 不重要不紧急. 全部 selected with pale-blue fill and blue type, NOT a huge saturated blue block. The four category cells have small colored dots matching their quadrants. No leftover huge blank region to the right of a short filter strip. Keep the entire three-row heading area compact, preserving a large matrix.
+
+CLEARER FOUR QUADRANTS:
+A true symmetrical 2x2 grid, equal column widths and row heights, with a prominent 22px WHITE CROSS-SHAPED GUTTER separating the quadrants. Each quadrant is individually outlined by a crisp 1.5px mid-light border in its matching hue, small 8px radius. All four should be unambiguously separated at first glance. Use restrained pastel surface colors with dark legible text, never muddy or neon. No heavy black cross or overly saturated panels.
+Top-left important/urgent: blush-coral surface #FFF0EC, border #E8B8AC, small dot and 3px top edge accent #BE6754.
+Top-right important/not urgent: sage surface #EFF5EE, border #BED1BC, accent #61846D.
+Bottom-left not important/urgent: warm apricot surface #FFF5E4, border #E8CE9E, accent #B48A45.
+Bottom-right neither: mist/slate-blue surface #EFF3F8, border #C1CDDE, accent #7388A7.
+These four color fields should clearly differ yet feel soft and harmonious together. Use the website brand blue only for global active controls, not every object inside the quadrants.
+Each quadrant header aligned at same top-left inset, bold title and small quiet count 1 项任务 aligned right. Exact titles 重要且紧急 / 重要不紧急 / 不重要但紧急 / 不重要不紧急.
+
+CONTENTS:
+Top-left oval project group 完成个人作品集 contains white floating rounded task card 准备周末分享, 11/01.
+Top-right oval 完成个人作品集 with nested inner oval 内容与视觉设计 contains white card 整理三个代表项目, 11/09.
+Bottom-left oval 完成个人作品集 contains white card 预约设备检修, 10/31.
+Bottom-right oval 完成个人作品集 contains white card 整理旅行灵感.
+Bubble outlines and small folder icons use the local quadrant accent hue, rather than bright blue everywhere. Project bubbles lightly tinted transparent white with crisp thin outlines. Task cards mostly white, subtle small shadow only to communicate draggable floating items. Include small checkbox and date icon as before. Retain balanced free space around all groups; nested upper-right group must not make that quadrant visually heavier: adjust internal bubble padding and group sizes so all quadrants feel equally weighted. Ellipsis menus remain discreet.
+Prefer precise airy useful composition, sophisticated muted pastel palette, clear boundaries, matched UI typography. No additional slogans, decorative illustrations, gradients, effects, data or new functions.

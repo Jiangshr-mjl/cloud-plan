@@ -1,0 +1,87 @@
+{
+  "approvedAt": "2026-10-30",
+  "status": "design-approved-not-implemented",
+  "generationMode": "built-in image_gen",
+  "pages": [
+    {
+      "id": "daily",
+      "title": "每日计划",
+      "file": "images/01-daily.png",
+      "source": "outputs/ui-concepts/v2/01-daily-flags-v2.png",
+      "note": "每日计划；周重点使用旗子",
+      "width": 1586,
+      "height": 992,
+      "sha256": "8901B5E1ED2D297FE2416680D77A017E799F03B7612C399B174A363F6DF83083"
+    },
+    {
+      "id": "projects",
+      "title": "项目列表",
+      "file": "images/02-project-list.png",
+      "source": "outputs/ui-concepts/v2/02-project-list.png",
+      "note": "项目管理 / 项目列表",
+      "width": 1587,
+      "height": 991,
+      "sha256": "35AC3E41EEC77D6933591B35A8A2072AD858775612425CB53B7833EC4032A11B"
+    },
+    {
+      "id": "quadrants",
+      "title": "子任务四象限",
+      "file": "images/03-quadrants.png",
+      "source": "outputs/ui-concepts/v2/03-project-quadrants-axes-v6.png",
+      "note": "最终坐标轴、外围虚线、红黄蓝灰圆点版",
+      "width": 1586,
+      "height": 992,
+      "sha256": "3851888C0096719D397CCDC1ADE9D7A79BDC1E0647D6DFF060A1EB320838CB7D"
+    },
+    {
+      "id": "timeline",
+      "title": "项目时间轴",
+      "file": "images/04-timeline.png",
+      "source": "outputs/ui-concepts/v2/04-project-timeline.png",
+      "note": "项目管理 / 时间轴",
+      "width": 1586,
+      "height": 992,
+      "sha256": "9821EFD981D33CA8C564D5F262E2ACD4857AFC711C1B7DBF0E21F2F6B58F2012"
+    },
+    {
+      "id": "habits",
+      "title": "21天习惯",
+      "file": "images/05-habits.png",
+      "source": "outputs/ui-concepts/v2/05-habits.png",
+      "note": "21 天打卡网格",
+      "width": 1586,
+      "height": 992,
+      "sha256": "65823733AA25773BED9F7DF3A6C20F44BBB9FB3629DD4E969073D4CD7A33A7D6"
+    },
+    {
+      "id": "records",
+      "title": "工作记录",
+      "file": "images/06-work-records.png",
+      "source": "outputs/ui-concepts/v2/06-work-records.png",
+      "note": "校正版，无单条任务耗时",
+      "width": 1586,
+      "height": 992,
+      "sha256": "4CF9100E27DFE00B6FAFBC6B4219A1011C7D1F899111AA135CEB4498046495C4"
+    },
+    {
+      "id": "settings",
+      "title": "设置与备份",
+      "file": "images/07-settings.png",
+      "source": "outputs/ui-concepts/v2/07-settings.png",
+      "note": "同步、备份、设备密钥",
+      "width": 1586,
+      "height": 992,
+      "sha256": "517DD9CE1929B7E962087EE3D3208983D2E0D831BAE0C4E7B9D5F02C247E69CD"
+    },
+    {
+      "id": "welcome",
+      "title": "欢迎与解锁",
+      "file": "images/08-welcome.png",
+      "source": "outputs/ui-concepts/v2/08-welcome-flexible-v3.png",
+      "note": "文案：让计划灵活，让生活轻盈。",
+      "width": 1586,
+      "height": 992,
+      "sha256": "C713D052E299A38BB803A9A59C01A0C8E74F92483C2FB84EC3F3B5A802432195"
+    }
+  ]
+}

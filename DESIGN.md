@@ -1,4 +1,6 @@
 # Cloud Plan · 晴空编辑部
+
+> **2026-10-30 最新视觉定稿已批准，尚未实施。** 后续 UI 更新以 [定稿目录](docs/ui-approved-2026-10-30/README.md) 中 8 张图和 [实施交接](docs/ui-approved-2026-10-30/HANDOFF.md) 为准。下文记录当前已实现的历史视觉体系；与定稿冲突时（如衬线标题、旧四象限表现）由新定稿覆盖。原有业务/交互约束继续有效。完成实施后再将本文同步为实际设计系统。
 User-selected direction A. Replaces the former warm-paper/forest identity.
 
 ## Palette
