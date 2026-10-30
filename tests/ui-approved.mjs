@@ -31,6 +31,11 @@ try {
  await page.route('**/api/work-time',r=>r.fulfill({json:{days:[]}}));
  await page.goto(base);assert.equal(await page.locator('.welcome h1').innerText(),'让计划灵活，\n让生活轻盈。');assert.equal(await page.getByRole('navigation').count(),0);
  await page.getByLabel('访问密钥',{exact:true}).fill('ui-approved-browser-test-key-000000');await page.getByRole('button',{name:'打开计划表',exact:true}).click();
+ await page.getByRole('button',{name:'暂停计时',exact:true}).click();
+ assert.equal(await page.evaluate(()=>localStorage.getItem('cloud-plan.work-paused')),'true');
+ assert.equal(await page.locator('.work-timer-readout strong').innerText(),'00:00');
+ await page.getByRole('button',{name:'恢复计时',exact:true}).focus();await page.keyboard.press('Enter');
+ assert.equal(await page.evaluate(()=>localStorage.getItem('cloud-plan.work-paused')),'false');
  const nav=async name=>page.getByRole('navigation').getByRole('button',{name,exact:name!=='每日计划'}).click();
  const fit=async label=>{await page.waitForTimeout(250);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,label);};
  for(const width of [1440,1360,820,390,360]) {

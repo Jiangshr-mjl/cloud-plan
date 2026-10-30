@@ -21,3 +21,8 @@
 npm run lint 未通过。修改前 app/page.tsx 已有85条错误（refs / set-state-in-effect）与2条图片警告；新增已完成列表复用 row 后同类 refs 诊断增至86条。habits.tsx、work-time.tsx 各2条既有 effect 错误未增加；其余全仓库问题还包括旧 outputs 脚本及测试 any 类型。未为通过 lint 关闭规则或重写业务队列。详细对比在本地 outputs/ui-lint-comparison.json。
 
 保持现有 Site 公开访问配置，应用内部密钥边界不变；只本地 Git 提交和 Sites 源码同步/发布，不推送 GitHub。手机、空态及弹窗为按交接适配，非逐像素批准稿。工作时长仍为网页运行时间，未增加任务耗时模型。
+
+## 2026-10-30 图标与计时补充
+- 网站 ICO、SVG、32/192/512 PNG、Apple Touch 与 maskable 图标统一为 #2463DB；图标 URL 版本更新到 v4，浏览器主题色同步。scripts/generate-icons.mjs 从同一 SVG 生成各尺寸资源。
+- 计时按定稿实现：普通页白色细边框控件、HH:MM 时长及圆形暂停/恢复按钮；工作记录页为时钟图标、蓝色状态和文字暂停/恢复按钮。原计时采集、同步和时长统计语义不变。
+- 类型检查通过；全页五档宽度回归、暂停/恢复及键盘操作通过；实际截图已刷新。
