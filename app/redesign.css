@@ -133,3 +133,15 @@ body{font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}.cloud-il
 .priority-matrix .goal-list{gap:34px;padding:24px}
 .priority-matrix .matrix-step:hover,.priority-matrix .matrix-step:focus-within,.priority-matrix .matrix-card-expanded,.priority-matrix .matrix-card-dragging{animation-play-state:paused}
 @media(prefers-reduced-motion:reduce){.priority-matrix .matrix-step{animation:none;transform:none}}
+
+/* Urgency changes blue depth; importance changes background alpha only. */
+.priority-matrix .quadrant.coral{--q:#193e66;--q-bg:hsl(211 58% 79% / .92)}
+.priority-matrix .quadrant.sage{--q:#193e66;--q-bg:hsl(211 58% 94% / .92)}
+.priority-matrix .quadrant.amber{--q:#193e66;--q-bg:hsl(211 58% 79% / .44)}
+.priority-matrix .quadrant.slate{--q:#193e66;--q-bg:hsl(211 58% 94% / .44)}
+.priority-matrix .goal-list,.priority-matrix.filtered-matrix .goal-list{display:flex;flex-wrap:wrap;align-items:flex-start;align-content:flex-start;gap:34px;padding:24px}
+.priority-matrix .matrix-step{width:fit-content;max-width:min(320px,100%);background:var(--task-fill);box-shadow:0 5px 14px #17324d14;flex:0 1 auto}
+.priority-matrix .matrix-task-name{text-align:center;min-height:48px;padding:13px 20px;line-height:1.6;color:#102c48}
+.priority-matrix .matrix-card-expanded{width:320px;max-width:100%}
+.priority-matrix .matrix-task-name[aria-expanded=true]{background:transparent}
+.matrix-task-details{background:#fbfdfff2;border-radius:0 0 12px 12px}

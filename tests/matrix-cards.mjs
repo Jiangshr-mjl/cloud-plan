@@ -17,6 +17,13 @@ try {for(const width of [1360,390]) {
  await page.getByRole('button',{name:'子任务四象限',exact:true}).click();
  const card=page.locator('.matrix-step').first();
  assert.equal(await card.evaluate(n=>getComputedStyle(n).animationName),'task-drift');
+ assert.ok((await card.boundingBox()).width<250,'short task cards fit their text');
+ assert.equal(await card.locator('.matrix-task-name').evaluate(n=>getComputedStyle(n).textAlign),'center');
+ assert.equal(await card.evaluate(n=>getComputedStyle(n).opacity),'1');
+ assert.ok((await card.evaluate(n=>getComputedStyle(n).backgroundColor))!=='rgb(255, 255, 255)');
+ const fills=await page.locator('.matrix-step').evaluateAll(ns=>ns.map(n=>n.style.getPropertyValue('--task-fill')));
+ assert.ok(fills.some(c=>c.includes('0.96')) && fills.some(c=>c.includes('0.56')));
+
  const motion=await page.locator('.matrix-step').evaluateAll(nodes=>nodes.map(n=>({duration:getComputedStyle(n).animationDuration,path:n.style.getPropertyValue('--drift-x0')})));
  assert.ok(new Set(motion.map(m=>m.duration)).size>1);
  assert.ok(new Set(motion.map(m=>m.path)).size>1);
