@@ -86,3 +86,36 @@ body{font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}.cloud-il
 .history-group+.history-group{border-top:1px solid var(--line)}.history-group>summary.history-day{display:flex;align-items:center;gap:12px;min-height:72px;margin:0;padding:20px;cursor:pointer;list-style:none}.history-group>summary::-webkit-details-marker{display:none}.history-group>summary.history-day h2{flex:1;min-width:0;margin:0;font-size:20px;font-weight:600;line-height:1.5;overflow-wrap:anywhere}.history-group>summary.history-day>span{flex-shrink:0;font-size:13px}.history-chevron{flex-shrink:0}.history-group[open]>summary .history-chevron{transform:rotate(90deg)}@media(max-width:640px){.history-group>summary.history-day{padding:16px 12px;gap:8px;min-height:68px}.history-group>summary.history-day h2{font-size:18px}}
 
 .quadrant-filter{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}.quadrant-filter button{min-height:44px;padding:10px 14px;border:1px solid var(--line);border-radius:5px;background:#fff;color:#526b83;font-size:13px;line-height:1.5}.quadrant-filter button[aria-pressed=true]{background:#2167b5;color:#fff;border-color:#2167b5}.priority-matrix.filtered-matrix .quadrant-grid{grid-template-columns:minmax(0,1fr)}.priority-matrix.filtered-matrix .quadrant{grid-area:auto}@media(max-width:640px){.quadrant-filter{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.quadrant-filter button:first-child{grid-column:1/-1}.quadrant-filter button{padding:10px 6px}}
+
+/* Task cards sit on an open four-quadrant board. */
+.priority-matrix .quadrant-grid{position:relative;gap:32px;align-items:stretch}
+.priority-matrix:not(.filtered-matrix) .quadrant-grid::before,.priority-matrix:not(.filtered-matrix) .quadrant-grid::after{content:"";position:absolute;background:#aec9df;pointer-events:none}
+.priority-matrix:not(.filtered-matrix) .quadrant-grid::before{width:1px;top:0;bottom:0;left:50%}
+.priority-matrix:not(.filtered-matrix) .quadrant-grid::after{height:1px;left:0;right:0;top:50%}
+.priority-matrix .quadrant{border:0!important;border-radius:12px;overflow:visible;min-height:240px;background:var(--q-bg)}
+.priority-matrix .quadrant-heading{padding:20px 18px 12px}
+.priority-matrix .quadrant-heading h2{font-size:16px}
+.priority-matrix .goal-list{padding:8px 16px 16px;display:grid;gap:14px;align-content:start}
+.matrix-step{padding:10px 14px 12px;border:0;border-radius:12px;background:#fff;box-shadow:0 5px 16px #17324d12;min-width:0;transition:box-shadow .18s,opacity .18s}
+.matrix-step:hover{box-shadow:0 8px 22px #17324d20}
+.matrix-step>.matrix-grip{display:flex;align-items:center;justify-content:flex-end;gap:4px;width:100%;min-width:44px;min-height:44px;margin:0;cursor:grab;touch-action:none;font-size:12px}
+.matrix-step>.matrix-grip:active{cursor:grabbing}
+.matrix-step .task-row{align-items:flex-start;gap:10px}
+.matrix-step .task-row .check-button{margin-top:5px}
+.matrix-step .task-row>.task-main{min-width:0;flex:1 1 150px}
+.matrix-step .task-title{font-size:15px!important;line-height:1.7}
+.matrix-step .subtask-priority{display:none}
+.matrix-step .row-tools{width:100%;gap:6px;justify-content:flex-end}
+.matrix-card-dragging{opacity:.35}
+.matrix-drop-tray{position:fixed;z-index:80;bottom:24px;left:50%;transform:translateX(-50%);width:min(440px,calc(100vw - 32px));padding:12px;background:#fff;border:1px solid #b7d0e5;border-radius:14px;box-shadow:0 12px 40px #17324d26}
+.matrix-drop-title{display:flex;align-items:center;justify-content:space-between;padding-left:8px;color:#17324d;font-size:14px}
+.matrix-drop-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.matrix-drop-options button{min-height:52px;padding:10px 6px;background:#edf5fc;border:1px solid #d0e3f2;border-radius:8px;color:#345e80;font-size:13px}
+.matrix-drop-options button.drop-target,.matrix-drop-options button:hover{background:#2167b5;color:#fff;border-color:#2167b5}
+.matrix-drag-preview{position:fixed;z-index:90;pointer-events:none;transform:translate(-50%,calc(-100% - 18px));display:flex;align-items:center;gap:8px;width:max-content;max-width:min(280px,80vw);padding:14px 18px;border-radius:12px;background:#fff;box-shadow:0 12px 30px #17324d33;color:#17324d;font-size:14px;overflow-wrap:anywhere}
+.matrix-drag-preview svg{flex-shrink:0}
+@media(max-width:640px){.priority-matrix .quadrant-grid{gap:16px}.priority-matrix .quadrant-grid::before,.priority-matrix .quadrant-grid::after{display:none}.priority-matrix .quadrant{min-height:150px}.priority-matrix .goal-list{padding:8px 12px 14px}.matrix-drop-tray{bottom:calc(88px + env(safe-area-inset-bottom))}.matrix-step .task-row>.task-main{flex-basis:calc(100% - 40px)}}
+@media(prefers-reduced-motion:reduce){.matrix-step{transition:none}}
+
+@media(min-width:641px){.priority-matrix:not(.filtered-matrix) .quadrant-grid{grid-template-rows:repeat(2,minmax(240px,1fr))}.priority-matrix .goal-list{grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr))}.priority-matrix .matrix-step{max-width:360px;width:100%;justify-self:start}.priority-matrix.filtered-matrix .goal-list{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}}
+.matrix-step .task-row{min-height:0}

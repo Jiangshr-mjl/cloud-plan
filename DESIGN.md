@@ -15,3 +15,6 @@ Fine-rule top navigation, no dark side rail. Desktop daily page: task list/progr
 
 ## Scope
 All labels, functionality, data, API contracts, key protection, sync, task/goal/habit operations and backup flows remain unchanged. UI UX Pro Max Swiss/editorial grid recommendations adapted to the selected blue/white palette; marketing storytelling recommendations do not apply to this working app.
+
+## 四象限任务卡片
+按用户草图，四象限使用十字分区和独立白色浮动任务卡片；柔和阴影用于表达可拖动。拖动时显示跟随卡片及四象限投放面板，手机保留分类筛选和纵向布局。
