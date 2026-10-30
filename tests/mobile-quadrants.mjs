@@ -14,6 +14,18 @@ try {for(const width of [320,360,390,430,640,768,1360]) {
   await page.goto('http://127.0.0.1:5173');
   await page.getByRole('navigation').getByRole('button',{name:'项目管理',exact:true}).click();
   await page.getByRole('button',{name:'子任务四象限',exact:true}).click();
+  const filters=page.getByRole('group',{name:'四象限分类筛选'});
+  for(const [i,name] of ['重要且紧急','重要不紧急','不重要但紧急','不重要不紧急'].entries()) {
+    await filters.getByRole('button',{name,exact:true}).click();
+    assert.equal(await page.locator('.priority-matrix .quadrant').count(),1);
+    assert.equal(await page.locator('.priority-matrix .quadrant').getAttribute('data-quadrant'),String(i));
+    assert.equal(await page.locator('.matrix-step').count(),2);
+    assert.equal(await filters.getByRole('button',{name,exact:true}).getAttribute('aria-pressed'),'true');
+    const bounds=await page.locator('.priority-matrix .quadrant').boundingBox();
+    assert.ok(bounds.x>=0 && bounds.x+bounds.width<=width);
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+  }
+  await filters.getByRole('button',{name:'全部',exact:true}).click();
   const regions=await page.locator('.priority-matrix .quadrant').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return {x:r.x,right:r.right,width:r.width,top:r.top,bottom:r.bottom};}));
   assert.equal(regions.length,4);
   for(const r of regions) assert.ok(r.x>=0&&r.right<=width,`${width}: quadrant outside screen ${JSON.stringify(r)}`);
