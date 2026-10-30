@@ -145,3 +145,7 @@ body{font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}.cloud-il
 .priority-matrix .matrix-card-expanded{width:320px;max-width:100%}
 .priority-matrix .matrix-task-name[aria-expanded=true]{background:transparent}
 .matrix-task-details{background:#fbfdfff2;border-radius:0 0 12px 12px}
+
+.priority-matrix .goal-list.spatial-task-board{display:block;position:relative;padding:0;min-height:130px;width:100%}.priority-matrix .spatial-task-board>.matrix-step{position:absolute;left:32px;top:32px;max-width:min(320px,calc(100% - 80px));margin:0}.spatial-task-board>.matrix-empty{margin:0;padding:32px 24px}
+
+.priority-matrix .spatial-task-board>.matrix-step{width:max-content}.priority-matrix .spatial-task-board>.matrix-card-expanded{width:320px}
