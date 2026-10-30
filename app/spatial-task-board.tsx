@@ -13,25 +13,52 @@ function BubbleArena({children}: {children: ReactNode}) {
   const ref = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const board = ref.current!;
+    const nested = board.parentElement!.classList.contains("project-bubble");
     const reduced = matchMedia("(prefers-reduced-motion: reduce)");
     let signature = "", frame = 0, previous = 0;
     let bodies: {el: HTMLElement; x:number; y:number; w:number; h:number; vx:number; vy:number; phase:number}[] = [];
     let width = 0, height = 0, dirty = true;
+    const outline=(b: typeof bodies[number]) => b.el.classList.contains("project-bubble")
+      ? Array.from({length:24},(_,i)=>[b.x+b.w/2+Math.cos(i*Math.PI/12)*b.w/2,b.y+b.h/2+Math.sin(i*Math.PI/12)*b.h/2])
+      : [[b.x,b.y],[b.x+b.w,b.y],[b.x,b.y+b.h],[b.x+b.w,b.y+b.h]];
     const layout = () => {
       const elements = Array.from(board.children).filter((el): el is HTMLElement => el instanceof HTMLElement && (el.classList.contains("project-bubble") || el.classList.contains("matrix-step")));
       width = board.clientWidth;
       const next = `${width}|${elements.map(el=>`${el.dataset.bubbleId || el.dataset.taskId}:${el.offsetWidth}:${el.offsetHeight}`).join("|")}`;
       if (!width || signature === next) return;
       signature = next;
-      let x = 16, y = 16, rowHeight = 0;
-      bodies = elements.map(el => {
+      const gap = nested ? 10 : 32;
+      const inset = nested ? width * .12 : 16;
+      const rows: typeof bodies[] = [];
+      let row: typeof bodies = [], used = 0;
+      for(const el of elements){
         const w=el.offsetWidth,h=el.offsetHeight,key=el.dataset.bubbleId || el.dataset.taskId || "";
-        if(x > 16 && x+w > width-16){x=16;y+=rowHeight+48;rowHeight=0;}
-        const body={el,x,y:y+variation(key)*20,w,h,vx:12+variation(key+"x")*14,vy:9+variation(key+"y")*12,phase:variation(key)*Math.PI*2};
-        x+=w+32;rowHeight=Math.max(rowHeight,h+20);
-        return body;
-      });
-      height = bodies.length ? y+rowHeight+104 : 100;
+        if(row.length && used+gap+w>width-inset*2){rows.push(row);row=[];used=0;}
+        row.push({el,x:0,y:0,w,h,vx:12+variation(key+"x")*14,vy:9+variation(key+"y")*12,phase:variation(key)*Math.PI*2});
+        used+=(used?gap:0)+w;
+      }
+      if(row.length)rows.push(row);
+      // The broadest bubbles occupy the ellipse's waist, smaller rows its tips.
+      const ordered: typeof rows=[];
+      for(const [i,r] of rows.sort((a,b)=>Math.max(...b.map(v=>v.h))-Math.max(...a.map(v=>v.h))).entries()){
+        if(i%2)ordered.unshift(r);else ordered.push(r);
+      }
+      let y=0;
+      bodies=[];
+      for(const r of ordered){
+        const h=Math.max(...r.map(b=>b.h));
+        let x=(width-r.reduce((sum,b)=>sum+b.w,0)-gap*(r.length-1))/2;
+        for(const b of r){b.x=x;b.y=y+(h-b.h)/2;x+=b.w+gap;bodies.push(b);}
+        y+=h+gap;
+      }
+      const contentHeight=Math.max(0,y-gap);
+      height=contentHeight+(nested?24:180);
+      if(nested)for(const b of bodies)for(const [px,py] of outline(b)){
+        const nx=(px-width/2)/(width/2);
+        height=Math.max(height,2*Math.abs(py-contentHeight/2)/Math.sqrt(Math.max(.01,1-nx*nx))+24);
+      }
+      height=Math.max(100,height);
+      for(const b of bodies)b.y+=(height-contentHeight)/2;
       board.style.height=`${height}px`;
       for(const b of bodies)b.el.style.transform=`translate3d(${b.x}px,${b.y}px,0)`;
     };
@@ -40,7 +67,7 @@ function BubbleArena({children}: {children: ReactNode}) {
     const mutation=new MutationObserver(observe);
     mutation.observe(board,{childList:true,subtree:true,characterData:true});
     observe();layout();
-    const overlaps=(a: typeof bodies[number],b: typeof bodies[number])=>a.x < b.x+b.w+12 && a.x+a.w+12>b.x && a.y<b.y+b.h+12 && a.y+a.h+12>b.y;
+    const overlaps=(a: typeof bodies[number],b: typeof bodies[number])=>a.x < b.x+b.w+8 && a.x+a.w+8>b.x && a.y<b.y+b.h+8 && a.y+a.h+8>b.y;
     const tick=(time:number)=>{
       const dt=Math.min((time-previous)/1000,.035);previous=time;
       if(dirty){dirty=false;layout();}
@@ -53,7 +80,8 @@ function BubbleArena({children}: {children: ReactNode}) {
           b.x+=b.vx*dt*speed;b.y+=b.vy*dt*speed;
           if(b.x<16 || b.x+b.w>width-16){b.x=Math.max(16,Math.min(b.x,width-16-b.w));b.vx*=-1;}
           if(b.y<16 || b.y+b.h>height-16){b.y=Math.max(16,Math.min(b.y,height-16-b.h));b.vy*=-1;}
-          if(bodies.some(other=>other!==b && overlaps(b,other))){b.x=oldX;b.y=oldY;b.vx*=-1;b.vy*=-1;}
+          const outsideEllipse = nested && outline(b).some(([px,py])=>Math.pow((px-width/2)/(width/2),2)+Math.pow((py-height/2)/(height/2),2)>1);
+          if(outsideEllipse || bodies.some(other=>other!==b && overlaps(b,other))){b.x=oldX;b.y=oldY;b.vx*=-1;b.vy*=-1;}
           b.el.style.transform=`translate3d(${b.x}px,${b.y}px,0)`;
         }
       }

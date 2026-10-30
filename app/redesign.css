@@ -174,3 +174,14 @@ body{font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}.cloud-il
  .priority-matrix .bubble-arena > .project-bubble,
  .priority-matrix .project-bubble .project-bubble {border-radius:70px / 90px;padding-block:24px}
 }
+/* Elliptical project boundaries and compact inner packing leave open water outside. */
+.priority-matrix .bubble-arena > .project-bubble,
+.priority-matrix .project-bubble .project-bubble {border-radius:50%;width:76%;max-width:480px;padding:24px 12px 16px}
+.priority-matrix .project-bubble .bubble-arena > .matrix-step {max-width:76%}
+.priority-matrix .project-bubble-title {max-width:65%;margin:0 auto 8px}
+@media(max-width:640px){
+ .priority-matrix .bubble-arena > .project-bubble,
+ .priority-matrix .project-bubble .project-bubble {width:80%;padding:20px 2px 12px}
+ .priority-matrix .project-bubble .project-bubble {width:76%}
+ .priority-matrix .project-bubble .matrix-task-name {padding:10px 8px}
+}

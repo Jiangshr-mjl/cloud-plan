@@ -34,6 +34,11 @@ try {
        for(const card of cards)for(const a of card.getAnimations()){a.pause();a.currentTime=second*1000;}
        const bounds=board.getBoundingClientRect(),rects=cards.map(c=>c.getBoundingClientRect()),errors=[];
        rects.forEach((r,i)=>{if(r.left<bounds.left||r.right>bounds.right||r.top<bounds.top||r.bottom>bounds.bottom)errors.push(`outside ${i}`);for(let j=0;j<i;j++){const b=rects[j];if(r.left<b.right&&r.right>b.left&&r.top<b.bottom&&r.bottom>b.top)errors.push(`overlap ${i},${j}`);}});
+       if(board.parentElement.classList.contains('project-bubble'))cards.forEach((card,i)=>{
+         const r=rects[i];
+         const points=card.classList.contains('project-bubble')?Array.from({length:24},(_,j)=>[r.x+r.width/2+Math.cos(j*Math.PI/12)*r.width/2,r.y+r.height/2+Math.sin(j*Math.PI/12)*r.height/2]):[[r.left,r.top],[r.right,r.top],[r.left,r.bottom],[r.right,r.bottom]];
+         for(const [x,y] of points)if(((x-bounds.x-bounds.width/2)/(bounds.width/2))**2+((y-bounds.y-bounds.height/2)/(bounds.height/2))**2>1.01)errors.push(`outside ellipse ${i} ${card.dataset.taskId || card.dataset.bubbleId} ${JSON.stringify({r:r.toJSON(),bounds:bounds.toJSON(),x,y})}`);
+       });
        return errors;
      }),second);
      assert.deepEqual(errors,[]);
