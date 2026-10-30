@@ -234,7 +234,7 @@ export default function Planner() {
       press.active=true;suppressMatrixClick.current=true;
       drag.current={id:task.id,revision:snapshot?.revision ?? 0,x,y,moved:false};
       setMatrixTask(task.id);setDraggingId(task.id);setDragPoint({x,y});
-    },350);
+    },180);
   }
   function moveMatrixPress(e: ReactPointerEvent<HTMLButtonElement>) {
     const press=matrixPress.current;if(!press)return;
