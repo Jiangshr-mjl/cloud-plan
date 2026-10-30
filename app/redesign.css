@@ -121,3 +121,11 @@ body{font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}.cloud-il
 .matrix-step .task-row{min-height:0}
 
 .priority-matrix .matrix-step{padding:0;max-width:300px;align-self:start}.matrix-task-name{display:block;width:100%;min-height:48px;padding:14px 16px;text-align:left;color:#17324d;font-size:15px;line-height:1.6;overflow-wrap:anywhere;border:0;border-radius:12px;background:transparent;cursor:grab;touch-action:pinch-zoom;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}.matrix-task-name:active{cursor:grabbing}.matrix-task-name[aria-expanded=true]{border-radius:12px 12px 0 0;background:#f3f8fc}.matrix-task-details{padding:12px 14px;border-top:1px solid var(--line)}.matrix-task-details .task-title{display:none}.priority-matrix .goal-list{grid-template-columns:repeat(auto-fill,minmax(min(180px,100%),1fr))}.priority-matrix.filtered-matrix .goal-list{grid-template-columns:repeat(auto-fill,minmax(min(180px,100%),1fr))}@media(max-width:640px){.priority-matrix .matrix-step{max-width:none}}
+
+@keyframes task-drift{0%,100%{transform:translate(0,0) rotate(-.25deg)}35%{transform:translate(3px,-4px) rotate(.35deg)}70%{transform:translate(-3px,2px) rotate(-.15deg)}}
+.priority-matrix .matrix-step{animation:task-drift 13s ease-in-out infinite;transform-origin:center}
+.priority-matrix .matrix-step:nth-child(3n+2){animation-duration:17s;animation-delay:-6s;animation-direction:reverse}
+.priority-matrix .matrix-step:nth-child(3n){animation-duration:15s;animation-delay:-10s}
+.priority-matrix .quadrant:nth-child(even) .matrix-step{animation-delay:-4s}
+.priority-matrix .matrix-step:hover,.priority-matrix .matrix-step:focus-within,.priority-matrix .matrix-card-expanded,.priority-matrix .matrix-card-dragging{animation-play-state:paused}
+@media(prefers-reduced-motion:reduce){.priority-matrix .matrix-step{animation:none;transform:none}}

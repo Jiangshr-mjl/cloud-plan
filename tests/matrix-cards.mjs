@@ -15,7 +15,13 @@ try {for(const width of [1360,390]) {
  await page.goto('http://127.0.0.1:5173');
  await page.getByRole('navigation').getByRole('button',{name:'项目管理',exact:true}).click();
  await page.getByRole('button',{name:'子任务四象限',exact:true}).click();
+ const card=page.locator('.matrix-step').first();
+ assert.equal(await card.evaluate(n=>getComputedStyle(n).animationName),'task-drift');
+ await page.emulateMedia({reducedMotion:'reduce'});
+ assert.equal(await card.evaluate(n=>getComputedStyle(n).animationName),'none');
+ await page.emulateMedia({reducedMotion:'no-preference'});
  await page.screenshot({path:`tests/output/matrix-cards/${width}.png`,fullPage:true});
+ await page.emulateMedia({reducedMotion:'reduce'});
  const handle=page.getByRole('button',{name:'任务详情：整理设计方案',exact:true});
  assert.equal(await handle.textContent(),'整理设计方案');
  assert.equal(await page.locator('.matrix-task-details').count(),0);

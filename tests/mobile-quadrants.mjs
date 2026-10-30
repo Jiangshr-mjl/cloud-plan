@@ -6,6 +6,7 @@ const browser=await chromium.launch({channel:'msedge'});
 await mkdir('tests/output/quadrants',{recursive:true});
 try {for(const width of [320,360,390,430,640,768,1360]) {
   const page=await browser.newPage({viewport:{width,height:844}});
+  await page.emulateMedia({reducedMotion:'reduce'});
   const now=new Date().toISOString();
   const root={id:randomUUID(),kind:'goal',parentId:null,title:'跨团队协作项目与长名称测试',notes:'',plannedDate:null,dueDate:null,important:true,urgent:false,order:0,completedAt:null,createdAt:now,updatedAt:now,version:0};
   const tasks=[root,...[0,1,2,3].flatMap((q)=>[0,1].map(i=>({...root,id:randomUUID(),kind:'step',parentId:root.id,title:`象限${q}任务${i}：核对移动页面布局与所有按钮完整显示LongUnbrokenTaskNameForMobile`,plannedDate:'2026-10-30',dueDate:'2027-12-31',important:q<2,urgent:q%2===0})))];
