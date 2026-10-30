@@ -1,6 +1,6 @@
 import { applyOperation, promoteUrgency, type Operation, type Snapshot, type Task } from "./planner";
 
-export type DailyOperation = Extract<Operation, { type: "create" | "reorder" }>;
+export type DailyOperation = Operation;
 type QueueState = { snapshot: Snapshot; count: number; active: boolean; error: string; conflict: boolean };
 type Transport = (payload?: { revision: number; operation: Operation }) => Promise<Snapshot>;
 const content = (tasks: Task[]) => JSON.stringify([...tasks].sort((a, b) => a.id.localeCompare(b.id)).map(({ version, createdAt, updatedAt, ...task }) => task));
@@ -10,11 +10,13 @@ export class DailyQueue {
   private base: Snapshot;
   private operations: DailyOperation[] = [];
   private running = false;
+  private timer: ReturnType<typeof setTimeout> | null = null;
+  private readyAt = 0;
   private paused = false;
   private message = "";
   private conflict = false;
   private uncertain: Snapshot | null = null;
-  constructor(base: Snapshot, private transport: Transport, private changed: (state: QueueState) => void) { this.base = base; }
+  constructor(base: Snapshot, private transport: Transport, private changed: (state: QueueState) => void, private delay = 30_000) { this.base = base; }
   private apply(base: Snapshot, op: DailyOperation): Snapshot {
     return { revision: base.revision + 1, tasks: promoteUrgency(applyOperation(base.tasks, op, base.revision + 1), base.revision + 1) };
   }
@@ -25,13 +27,24 @@ export class DailyQueue {
     this.apply(this.projected(), operation); // Validate before closing the form.
     this.operations.push(operation);
     this.emit();
-    void this.drain();
+    this.schedule();
   }
+  private schedule() {
+    if (this.timer) clearTimeout(this.timer);
+    this.readyAt = Date.now() + this.delay;
+    this.timer = setTimeout(() => { this.timer = null; void this.drain(); }, this.delay);
+  }
+  flush() {
+    if (this.timer) clearTimeout(this.timer);
+    this.timer = null; this.readyAt = 0;
+    return this.drain();
+  }
+  dispose() { if (this.timer) clearTimeout(this.timer); this.timer = null; }
   private async drain() {
     if (this.running || this.paused || !this.operations.length) return;
     this.running = true; this.message = ""; this.conflict = false; this.emit();
     try {
-      while (this.operations.length) {
+      while (this.operations.length && Date.now() >= this.readyAt) {
         const operation = this.operations[0];
         this.uncertain = this.apply(this.base, operation);
         const result = await this.transport({ revision: this.base.revision, operation });
@@ -57,12 +70,12 @@ export class DailyQueue {
       const remote = await this.transport();
       if (!this.acknowledgeIfApplied(remote) && remote.revision !== this.base.revision) {
         this.conflict = true;
-        throw new Error("其他设备已更新计划。本机新增与排序已保留，请先加载最新数据并核对。");
+        throw new Error("其他设备已更新计划。本机变更已保留，请先加载最新数据并核对。");
       }
       this.base = remote; this.paused = false; this.message = ""; this.conflict = false;
     } catch (error) { this.paused = true; this.message = (error as Error).message; }
     finally { this.running = false; this.emit(); }
-    if (!this.paused) void this.drain();
+    if (!this.paused) void this.flush();
   }
   /** Explicit user action: preview pending changes over fresh data; never save automatically. */
   async reload() {
@@ -79,13 +92,13 @@ export class DailyQueue {
       });
       operations.reduce((state, op) => this.apply(state, op), remote);
       this.base = remote; this.operations = operations; this.uncertain = null; this.conflict = false;
-      this.message = operations.length ? "已加载最新数据，本机新增与排序已保留。请核对列表后点击重试保存。" : "";
+      this.message = operations.length ? "已加载最新数据，本机变更已保留。请核对列表后点击重试保存。" : "";
     } catch (error) { this.message = (error as Error).message; this.conflict = true; }
     finally { this.paused = true; this.running = false; this.emit(); }
   }
   async discard() {
     if (this.running) return;
-    this.running = true; this.emit();
+    this.dispose(); this.running = true; this.emit();
     try { this.base = await this.transport(); this.operations = []; this.uncertain = null; this.message = ""; this.conflict = false; }
     catch (error) { this.message = (error as Error).message; }
     finally { this.running = false; this.emit(); }

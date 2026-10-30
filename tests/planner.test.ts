@@ -36,7 +36,7 @@ test("连续新增和排序立即投影，串行响应不会把界面退回旧�
     assert.equal(payload.revision, server.revision);
     server = { revision: server.revision + 1, tasks: applyOperation(server.tasks, payload.operation, server.revision + 1) };
     active--; return server;
-  }, state => { current = state; orders.push([...state.snapshot.tasks].sort((x,y) => x.order-y.order).map(t => t.id)); });
+  }, state => { current = state; orders.push([...state.snapshot.tasks].sort((x,y) => x.order-y.order).map(t => t.id)); }, 0);
   queue.enqueue(creation(a)); queue.enqueue(creation(b)); queue.enqueue({ type: "reorder", ids: [b.id, a.id] });
   assert.equal(server.tasks.length, 0); assert.equal(current.count, 3);
   const start = orders.length; assert.deepEqual(orders.at(-1), [b.id, a.id]);
@@ -51,7 +51,7 @@ test("响应丢失后重试确认已写入，不重复创建且继续后续队�
     posts++; assert.equal(payload.revision, server.revision);
     server = { revision: server.revision + 1, tasks: applyOperation(server.tasks, payload.operation, server.revision + 1) };
     if (lost) { lost = false; throw new Error("Response lost"); } return server;
-  }, state => { current = state; });
+  }, state => { current = state; }, 0);
   queue.enqueue(creation(task())); queue.enqueue(creation(task()));
   await until(() => !!current.error); assert.equal(current.snapshot.tasks.length, 2);
   await queue.retry(); await until(() => current.count === 0 && !current.active);
@@ -63,13 +63,52 @@ test("队列冲突停止保存，显式加载最新后核对重试保留另一�
     if (!payload) return server;
     if (payload.revision !== server.revision) throw Object.assign(new Error("Conflict"), { status: 409 });
     server = { revision: server.revision + 1, tasks: applyOperation(server.tasks, payload.operation, server.revision + 1) }; return server;
-  }, state => { current = state; });
+  }, state => { current = state; }, 0);
   server = { revision: 2, tasks: [{ ...original, title: "另一设备修改" }] };
   queue.enqueue(creation(task())); await until(() => !!current.error);
   await queue.retry(); assert.equal(current.conflict, true); assert.equal(server.revision, 2);
   await queue.reload(); assert.equal(current.count, 1); assert.equal(current.snapshot.tasks[0].title, "另一设备修改"); assert.equal(server.revision, 2);
   await queue.retry(); await until(() => current.count === 0 && !current.active);
   assert.equal(server.tasks[0].title, "另一设备修改"); assert.equal(server.tasks.length, 2);
+});
+test("全部计划变更立即显示，最后一次变更后满30秒才上传", async t => {
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"] });
+  let server: Snapshot = { revision: 0, tasks: [] }; let current: any; let posts = 0;
+  const a = task();
+  const queue = new DailyQueue(server, async payload => {
+    if (!payload) return server;
+    posts++;
+    server = { revision: server.revision + 1, tasks: applyOperation(server.tasks, payload.operation, server.revision + 1) };
+    return server;
+  }, state => { current = state; });
+  queue.enqueue(creation(a));
+  t.mock.timers.tick(29_000); assert.equal(posts, 0);
+  queue.enqueue({ type: "edit", id: a.id, changes: { title: "更新标题" } });
+  assert.equal(current.snapshot.tasks[0].title, "更新标题");
+  t.mock.timers.tick(29_999); assert.equal(posts, 0);
+  t.mock.timers.tick(1);
+  await queue.flush();
+  await Promise.resolve(); await Promise.resolve();
+  assert.equal(posts, 2); assert.equal(current.count, 0);
+  queue.dispose();
+});
+test("上传中的新变更重新计时，旧响应保留本地最新内容", async t => {
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"] });
+  let server: Snapshot = { revision: 0, tasks: [] }; let current: any; let posts = 0;
+  let release!: () => void; const gate = new Promise<void>(resolve => { release = resolve; });
+  const a = task();
+  const queue = new DailyQueue(server, async payload => {
+    if (!payload) return server;
+    posts++; if (posts === 1) await gate;
+    server = { revision: server.revision + 1, tasks: applyOperation(server.tasks, payload.operation, server.revision + 1) }; return server;
+  }, state => { current = state; });
+  queue.enqueue(creation(a)); t.mock.timers.tick(30_000);
+  queue.enqueue({ type: "schedule", ids: [a.id], date: "2026-11-01" });
+  release(); await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+  assert.equal(posts, 1); assert.equal(current.snapshot.tasks[0].plannedDate, "2026-11-01");
+  t.mock.timers.tick(29_999); assert.equal(posts, 1);
+  t.mock.timers.tick(1); await Promise.resolve(); await Promise.resolve();
+  assert.equal(posts, 2); assert.equal(current.count, 0); queue.dispose();
 });
 function task(overrides: Partial<Task> = {}): Task { return { id: randomUUID(), kind: "daily", parentId: null, title: "写引言", notes: "", plannedDate: "2026-10-19", dueDate: "2026-10-21", important: true, urgent: false, order: 1, completedAt: null, createdAt: now, updatedAt: now, version: 1, ...overrides }; }
 test("关联子任务改期不复制、不改变截止日期或象限", () => {

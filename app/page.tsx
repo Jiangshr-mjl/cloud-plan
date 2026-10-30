@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type FormEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { ArrowDown, ArrowRight, ArrowUp, CalendarDays, Check, CheckCheck, ChevronDown, ChevronRight, Cloud, Download, Flag, FolderOpen, GripVertical, Grid2X2, History, KeyRound, ListTodo, LoaderCircle, LockKeyhole, LogOut, Plus, RefreshCw, Search, Settings2, Sprout, Star, Sun, Trash2, Upload, X } from "lucide-react";
-import { descendantIds, applyOperation, promoteUrgency, backupSchema, beijingDate, weekStart, isDailyTask, makeBackup, quadrant, sorted, type Operation, type Snapshot, type Task } from "@/lib/planner";
+import { descendantIds, backupSchema, beijingDate, weekStart, isDailyTask, makeBackup, quadrant, sorted, type Operation, type Snapshot, type Task } from "@/lib/planner";
 
 import { DailyQueue, type DailyOperation } from "@/lib/daily-queue";
 
@@ -128,6 +128,7 @@ export default function Planner() {
     const handler = (e: BeforeUnloadEvent) => { if (draft || pending.current || quickQueue.current) { e.preventDefault(); e.returnValue = ""; } };
     window.addEventListener("beforeunload", handler); return () => window.removeEventListener("beforeunload", handler);
   }, [draft]);
+  useEffect(() => () => quickQueue.current?.dispose(), []);
   useEffect(() => { if (draft && dialogRef.current && !dialogRef.current.open) dialogRef.current.showModal(); }, [draft]);
   async function unlock(e: FormEvent) {
     e.preventDefault(); if (inFlight.current) return;
@@ -152,24 +153,18 @@ export default function Planner() {
     const link = document.createElement("a"); link.href = url; link.download = "Cloud-Plan-未保存操作.json"; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
   async function mutate(operation: Operation, after?: () => void, revision = snapshot?.revision ?? 0) {
-    if (inFlight.current || quickQueue.current) return;
-    inFlight.current = true; ++generation.current; setBusy(true); setError(""); setConflict(false); setNotice(""); pending.current = { operation, revision, after };
-    const previous = snapshot;
-    const optimistic = !!previous && (operation.type === "moveProject" || operation.type === "complete" || operation.type === "schedule" || operation.type === "reorder" || operation.type === "delete" || (operation.type === "edit" && !after));
-    if (optimistic) {
-      try { setSnapshot({ revision: previous.revision, tasks: promoteUrgency(applyOperation(previous.tasks, operation, revision + 1), revision + 1) }); } catch { /* The server returns the authoritative validation error. */ }
-    }
-    try { const data = await api(accessKey, { revision, operation }); setSnapshot(data); setLastSync(new Date()); pending.current = null; after?.(); setNotice(operation.type === "edit" && operation.changes.urgent === false && data.tasks.find(t => t.id === operation.id)?.urgent ? "已保存。截止日期已进入自动升级范围，任务归入紧急象限。" : operation.type === "edit" && operation.changes.plannedDate === null && data.tasks.find(t => t.id === operation.id)?.kind === "step" ? "已撤回每日计划，子任务仍保留在项目中" : operation.type === "schedule" && operation.ids.every(id => data.tasks.find(t => t.id === id)?.kind === "step") ? `已加入 ${operation.date} 的每日计划` : "已保存到云端"); }
-    catch (e) { if (optimistic) setSnapshot(previous); const err = e as ApiError; setError(err.message); setConflict(err.status === 409); }
-    finally { inFlight.current = false; setBusy(false); }
+    if (operation.type === "import" && quickQueue.current) { setNotice("请先同步待保存的变更，再恢复备份。"); return; }
+    if (revision !== snapshot?.revision && !quickQueue.current) { setError("计划已更新，请重新打开编辑后保存。"); return; }
+    if (enqueueDaily(operation)) after?.();
   }
+
   function newTask(kind: Task["kind"] = "daily", parentId: string | null = null, q = 1) {
-    if (pending.current || (quickQueue.current && (kind !== "daily" || error)) || (inFlight.current && !quickQueue.current)) { setNotice("请先处理尚未保存的操作。"); return; }
+    if (pending.current || (quickQueue.current && error) || (inFlight.current && !quickQueue.current)) { setNotice("请先处理尚未保存的操作。"); return; }
     setDraftRevision(snapshot?.revision ?? 0);
     setDraft({ id: crypto.randomUUID(), kind, parentId, title: "", notes: "", plannedDate: kind === "weekly" ? weekStart(selectedDate) : kind === "daily" ? selectedDate : "", dueDate: kind === "step" ? tasks.find(t => t.id === parentId && t.kind === "goal")?.dueDate ?? "" : "", important: QUADRANTS[q].important, urgent: QUADRANTS[q].urgent, order: Math.min(1000000, Math.max(0, ...tasks.map(t => t.order)) + 1), isNew: true });
   }
-  function edit(task: Task) { if (pending.current || quickQueue.current) return; setDraftRevision(snapshot?.revision ?? 0); setDraft({ ...task, plannedDate: task.plannedDate ?? "", dueDate: task.dueDate ?? "", isNew: false }); }
-  function closeDraft() { if ((busy && !(draft?.isNew && draft.kind === "daily" && quickQueue.current)) || !window.confirm("关闭编辑？尚未保存的输入将被舍弃。")) return; setDraft(null); if (!quickQueue.current) { pending.current = null; setError(""); setConflict(false); } }
+  function edit(task: Task) { if (pending.current || (quickQueue.current && error)) return; setDraftRevision(snapshot?.revision ?? 0); setDraft({ ...task, plannedDate: task.plannedDate ?? "", dueDate: task.dueDate ?? "", isNew: false }); }
+  function closeDraft() { if ((busy && !quickQueue.current) || !window.confirm("关闭编辑？尚未保存的输入将被舍弃。")) return; setDraft(null); if (!quickQueue.current) { pending.current = null; setError(""); setConflict(false); } }
   function saveDraft(e: FormEvent) {
     e.preventDefault(); if (!draft) return;
     const values = { title: draft.title.trim(), notes: draft.notes, plannedDate: draft.kind === "weekly" ? weekStart(draft.plannedDate) : draft.plannedDate || null, dueDate: draft.dueDate || null, important: draft.important, urgent: draft.urgent };
@@ -187,6 +182,7 @@ export default function Planner() {
   }
   function reorder(list: Task[], index: number, offset: number) { const ids = list.map(t => t.id); [ids[index], ids[index + offset]] = [ids[index + offset], ids[index]]; enqueueDaily({ type: "reorder", ids }); }
   async function exportBackup() {
+    if (quickQueue.current && snapshot) { download(snapshot.tasks); setNotice("已导出当前计划（包含待同步变更）。"); return; }
     if (inFlight.current) return; inFlight.current = true; setBusy(true);
     try { const data = await api(accessKey); download(data.tasks); setNotice("备份已导出，请保管下载的 JSON 文件。"); } catch (e) { setError((e as Error).message); } finally { inFlight.current = false; setBusy(false); }
   }
@@ -196,7 +192,7 @@ export default function Planner() {
     try { setImportData(backupSchema.parse(JSON.parse(await file.text()))); } catch { setImportError("文件格式、日期或子任务关联无效。现有数据未改变。"); }
   }
   async function restoreBackup() {
-    if (!importData || inFlight.current || !window.confirm(`将用备份中的 ${importData.tasks.length} 条任务替换全部云端任务。先自动下载当前备份，然后继续？`)) return;
+    if (!importData || quickQueue.current || inFlight.current || !window.confirm(`将用备份中的 ${importData.tasks.length} 条任务替换全部云端任务。先自动下载当前备份，然后继续？`)) return;
     inFlight.current = true; setBusy(true);
     try { const current = await api(accessKey); download(current.tasks, "导入前自动备份"); inFlight.current = false; await mutate({ type: "import", backup: importData }, () => setImportData(null), current.revision); }
     catch (e) { setError((e as Error).message); } finally { inFlight.current = false; setBusy(false); }
@@ -218,10 +214,10 @@ export default function Planner() {
   const weekDaily = tasks.filter(t => isDailyTask(t) && t.plannedDate && t.plannedDate >= currentWeek && t.plannedDate <= weekEnd);
   const dailyDone = allDaily.length - daily.length;
   const percent = allDaily.length ? Math.round(dailyDone / allDaily.length * 100) : 0;
-  const disabled = busy || !!pending.current || queueCount > 0;
+  const disabled = (busy && !quickQueue.current) || !!pending.current || (queueCount > 0 && !!error);
   const dailyBlocked = !!pending.current || (busy && !quickQueue.current) || (queueCount > 0 && !!error);
-  const formBusy = draft?.isNew && draft.kind === "daily" ? dailyBlocked : busy;
-  const queuedIds = new Set(quickQueue.current?.exportOperations().flatMap(op => op.type === "create" ? [op.task.id] : op.ids) ?? []);
+  const formBusy = dailyBlocked;
+  const queuedIds = new Set(quickQueue.current?.exportOperations().flatMap(op => op.type === "create" ? [op.task.id] : "ids" in op ? op.ids : "id" in op ? [op.id] : []) ?? []);
   function due(task: Task) {
     if (!task.dueDate || task.completedAt) return null;
     const diff = Math.round((Date.parse(task.dueDate) - Date.parse(today)) / 86400000);
@@ -382,7 +378,7 @@ export default function Planner() {
   }
 
   function errorBanner(inDialog = false) {
-    if (queueCount > 0 && !busy && error) return <div className="error-banner" role="alert"><strong>尚未保存 · {queueCount} 项操作</strong><p>{error}</p><p>本机新增与排序已保留，请勿关闭页面。联网后可重试，或先导出未保存操作。</p><div className="banner-actions"><button type="button" onClick={() => void quickQueue.current?.reload()}>加载最新，保留待保存操作</button>{!conflict && <button type="button" onClick={() => void quickQueue.current?.retry()}>重试保存</button>}<button type="button" onClick={exportQueue}>导出未保存操作</button><button type="button" onClick={() => { if (window.confirm("取消尚未保存的新增和排序？已保存的云端任务不受影响。")) void quickQueue.current?.discard(); }}>取消待保存操作</button></div></div>;
+    if (queueCount > 0 && !busy && error) return <div className="error-banner" role="alert"><strong>尚未保存 · {queueCount} 项操作</strong><p>{error}</p><p>本机变更已保留，请勿关闭页面。联网后可重试，或先导出未保存操作。</p><div className="banner-actions"><button type="button" onClick={() => void quickQueue.current?.reload()}>加载最新，保留待保存操作</button>{!conflict && <button type="button" onClick={() => void quickQueue.current?.retry()}>重试保存</button>}<button type="button" onClick={exportQueue}>导出未保存操作</button><button type="button" onClick={() => { if (window.confirm("取消尚未保存的变更？已保存的云端任务不受影响。")) void quickQueue.current?.discard(); }}>取消待保存操作</button></div></div>;
     if (busy || (!error && !pending.current)) return null;
     return <div className="error-banner" role="alert"><strong>{pending.current ? "尚未保存" : "连接提示"}</strong><p>{error || "最新计划已加载，请核对后重新保存。"}</p><div className="banner-actions"><button type="button" onClick={() => void refresh(true)} disabled={busy}><RefreshCw size={13} />加载最新{inDialog ? "，保留草稿" : ""}</button>{pending.current && !conflict && <button type="button" disabled={busy} onClick={() => { const p = pending.current; if (p) void mutate(p.operation, p.after, p.revision); }}>重试保存</button>}{pending.current && !inDialog && <button type="button" disabled={busy} onClick={() => { pending.current = null; setError(""); setConflict(false); void refresh(true); }}>取消待保存操作</button>}</div></div>;
   }
@@ -390,8 +386,8 @@ export default function Planner() {
   if (!snapshot) return <main className="welcome"><div className="welcome-brand"><span className="brand-icon"><img src="/favicon.svg?v=3" width={36} height={36} alt="" /></span><span>Cloud Plan</span></div><section className="welcome-copy"><div className="cloud-illustration" aria-hidden="true"><Cloud strokeWidth={1} /><span className="floating-check"><Check size={22} /></span><span className="orbit-dot" /></div><h1>让计划清晰，<br /><em>让生活轻盈。</em></h1></section><form className="unlock-card" onSubmit={unlock}><span className="lock-symbol"><LockKeyhole size={26} /></span><h2>回到你的计划</h2><label htmlFor="access-key">访问密钥</label><input id="access-key" type="password" autoComplete="off" autoFocus placeholder="输入你的 32 位访问密钥" value={keyInput} onChange={e => setKeyInput(e.target.value)} required minLength={32} maxLength={256} />{error && <p className="inline-error" role="alert">{error}</p>}<button className="primary wide" type="submit" disabled={busy}>{busy ? <LoaderCircle className="spin" size={17} /> : <ArrowRight size={17} />}打开计划表</button>{accessKey && <button type="button" className="text-button" onClick={() => void refresh(true)}>重新连接已记住的密钥</button>}</form></main>;
   return <div className="app-shell">
     <aside className="sidebar"><a className="brand" href="#" onClick={e => { e.preventDefault(); setView("daily"); }}><span className="brand-icon"><img src="/favicon.svg?v=3" width={36} height={36} alt="" /></span><span>Cloud Plan</span></a><div className="space-label">我的计划空间</div><nav aria-label="主导航">{([{ id: "daily", text: "每日计划", icon: CalendarDays }, { id: "goals", text: "项目管理", icon: Grid2X2 }, { id: "habits", text: "21天习惯养成", icon: Sprout }, { id: "history", text: "工作记录", icon: History }, { id: "settings", text: "设置与备份", icon: Settings2 }] as const).map(item => <button className={`nav-item ${view === item.id ? "active" : ""}`} key={item.id} title={item.id === "habits" && habitReminders > 0 ? `${habitReminders} 个习惯待打卡` : undefined} aria-describedby={item.id === "habits" && habitReminders > 0 ? "habit-reminder-status" : undefined} aria-current={view === item.id ? "page" : undefined} onClick={() => setView(item.id)}><span className="nav-icon"><item.icon size={19} />{item.id === "habits" && habitReminders > 0 && <span className="habit-reminder-dot" aria-hidden="true"/>}</span><span>{item.text}</span>{item.id === "daily" && <small>{tasks.filter(t => isDailyTask(t) && t.plannedDate === today && !t.completedAt).length}</small>}</button>)}</nav><span id="habit-reminder-status" className="sr-only" role="status">{habitReminders > 0 ? `${habitReminders} 个习惯已到提醒时间，今日尚未打卡` : ""}</span><div className="sidebar-bottom"><div className="private-space"><span><LockKeyhole size={15} /></span><div>我的私人计划</div></div></div></aside>
-    <main className="main-panel"><header className="topbar"><span><span className="breadcrumb">Cloud Plan</span><ChevronRight size={13} />{{ daily: "每日计划", goals: "项目管理", habits: "21天习惯养成", history: "工作记录", settings: "设置与备份" }[view]}</span><button className={`sync-status ${error ? "sync-error" : ""}`} onClick={() => void refresh(true)} disabled={busy || queueCount > 0} title="刷新云端数据">{busy ? <LoaderCircle size={14} className="spin" /> : <Cloud size={14} />}<span>{busy ? "正在保存…" : error ? "连接异常" : "已同步"}</span><span className="status-dot" /></button></header>
-      <div className="content">{queueCount > 0 && busy && <div className="notice" role="status">正在同步 {queueCount} 项操作，可继续新增每日任务或调整顺序。</div>}{errorBanner()}{notice && <div className="notice" role="status">{notice}<button className="icon-button" onClick={() => setNotice("")} aria-label="关闭提示"><X size={13} /></button></div>}
+    <main className="main-panel"><header className="topbar"><span><span className="breadcrumb">Cloud Plan</span><ChevronRight size={13} />{{ daily: "每日计划", goals: "项目管理", habits: "21天习惯养成", history: "工作记录", settings: "设置与备份" }[view]}</span><button className={`sync-status ${error ? "sync-error" : ""}`} onClick={() => { if (quickQueue.current) void quickQueue.current.flush(); else void refresh(true); }} disabled={busy || !!error && queueCount > 0} title={queueCount ? "立即同步" : "刷新云端数据"}>{busy ? <LoaderCircle size={14} className="spin" /> : <Cloud size={14} />}<span>{busy ? "正在保存…" : error ? "连接异常" : queueCount ? "待同步 · 停止修改 30 秒后保存" : "已同步"}</span><span className="status-dot" /></button></header>
+      <div className="content">{queueCount > 0 && busy && <div className="notice" role="status">正在同步 {queueCount} 项操作，可继续修改计划。</div>}{errorBanner()}{notice && <div className="notice" role="status">{notice}<button className="icon-button" onClick={() => setNotice("")} aria-label="关闭提示"><X size={13} /></button></div>}
         <WorkTime accessKey={accessKey} visible={view === "history"} open={() => setView("history")} /><Habits onReminderChange={setHabitReminders} tasks={tasks} revision={snapshot.revision} disabled={disabled} visible={view === "habits"} open={() => setView("habits")} save={mutate} remove={remove} />{view === "daily" && <><div className="page-heading"><div><h1>{selectedDate === today ? "今天，也从容一点。" : "为这一天，留好安排。"}</h1><p>{dateLabel(selectedDate)}</p></div><button className="primary" onClick={() => newTask()} disabled={dailyBlocked}><Plus size={18} />添加任务</button></div>
           <div className="day-overview" aria-label="计划概览"><div><strong>{daily.length}<small>项待完成</small></strong></div><div><strong>{goals.length}<small>个项目</small></strong></div><div><strong>{overdue.length}<small>项等待安排</small></strong></div><Cloud className="overview-cloud" aria-hidden="true" /></div><div className="daily-workspace"><div className="daily-layout"><section className="task-card"><div className="card-toolbar"><div className="date-nav"><button className="icon-button" aria-label="前一天" onClick={() => setSelectedDate(shiftDate(selectedDate, -1))}><ChevronRight className="flip" size={17} /></button><label className="date-input"><CalendarDays size={15} /><input type="date" aria-label="计划日期" min="1900-01-01" max="2200-12-31" value={selectedDate} onChange={e => e.target.value && setSelectedDate(e.target.value)} /></label><button className="icon-button" aria-label="后一天" onClick={() => setSelectedDate(shiftDate(selectedDate, 1))}><ChevronRight size={17} /></button><button className="today-button" onClick={() => setSelectedDate(today)}>今天</button></div><span className="count-label">{daily.length} 项待办</span></div><div className="list-heading"><h2>这一天的清单</h2><span>{dailyDone} / {allDaily.length} 已完成</span></div>
           {daily.length ? <div className="task-list">{daily.map((t, i) => row(t, daily, i, false, false, true))}</div> : <div className="empty-state"><span className="empty-icon"><ListTodo size={30} /></span><h3>{allDaily.length ? "这一天的待办已全部完成" : "留一点空间，给今天"}</h3>{allDaily.length > 0 && <button className="text-button" onClick={() => setView("history")}>查看工作记录 <ArrowRight size={14} /></button>}<button className="secondary" onClick={() => newTask()} disabled={disabled}><Plus size={16} />写下第一件事</button></div>}<button className="add-line" onClick={() => newTask()} disabled={disabled}><Plus size={16} />添加任务</button></section>
