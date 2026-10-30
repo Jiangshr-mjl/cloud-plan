@@ -24,6 +24,7 @@ try {
     await page.getByLabel('任务名称').fill(title);
     await page.getByRole('button',{name:'保存任务',exact:true}).click();
     await page.locator('dialog').waitFor({state:'hidden'});
+    await page.getByTitle('立即同步',{exact:true}).click();await page.getByText('已同步',{exact:true}).waitFor();
     assert.equal(state.tasks.find(t=>t.title===title).dueDate,date||null);
   }
   const emptyCard=page.locator(`[data-project-id="${undated.id}"]`);

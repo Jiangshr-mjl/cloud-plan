@@ -32,7 +32,7 @@ try {
  await page.evaluate(()=>document.fonts.ready);await page.waitForTimeout(300);await page.screenshot({animations:'disabled',path:'docs/images/welcome.png',fullPage:true});
  await page.getByLabel('访问密钥',{exact:true}).fill('cloud-plan-demo-key-for-screenshots');
  await page.getByRole('button',{name:'打开计划表',exact:true}).click();
- await page.getByRole('heading',{name:'今天，也从容一点。'}).waitFor();
+ await page.getByRole('heading',{name:'今天的计划'}).waitFor();
  async function capture(name){await page.evaluate(()=>window.scrollTo(0,0));await page.mouse.move(0,0);await page.evaluate(()=>document.fonts.ready);await page.waitForTimeout(300);await page.screenshot({animations:'disabled',path:`docs/images/${name}.png`,fullPage:name!=='mobile'});}
  async function nav(name){await page.getByRole('navigation').getByRole('button',{name,exact:name!=='每日计划'}).click();}
  await capture('daily'); await nav('项目管理');

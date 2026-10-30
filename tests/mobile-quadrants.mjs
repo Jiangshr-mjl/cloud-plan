@@ -27,6 +27,7 @@ try {for(const width of [320,360,390,430,640,768,1360]) {
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   }
   await filters.getByRole('button',{name:'全部',exact:true}).click();
+  await page.waitForTimeout(200); // ResizeObserver and nested arenas settle after leaving a single-region view.
   const regions=await page.locator('.priority-matrix .quadrant').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return {x:r.x,right:r.right,width:r.width,top:r.top,bottom:r.bottom};}));
   assert.equal(regions.length,4);
   for(const r of regions) assert.ok(r.x>=0&&r.right<=width,`${width}: quadrant outside screen ${JSON.stringify(r)}`);

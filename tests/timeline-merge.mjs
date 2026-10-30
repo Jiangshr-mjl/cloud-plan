@@ -23,7 +23,7 @@ try {for(const width of [1360,390]) {
   const project=page.locator(`[data-project-id="${root.id}"]`);
   await project.locator(':scope > summary').click();
   await page.locator(`[data-project-id="${sub.id}"] > summary`).click();
-  assert.equal(await page.getByRole('button',{name:'编辑：同日子任务',exact:true}).isVisible(),true);
+  await page.getByRole('button',{name:'编辑：同日子任务',exact:true}).waitFor();
   assert.equal(await project.getByRole('button',{name:'编辑：不同日任务',exact:true}).count(),0);
   await page.getByRole('button',{name:'编辑：同日子任务',exact:true}).click();
   assert.equal(await page.getByLabel('截止日期').inputValue(),'2027-05-20');

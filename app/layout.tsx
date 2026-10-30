@@ -3,7 +3,7 @@ import "./globals.css";
 import "./redesign.css";
 
 export const metadata: Metadata = {
-  title: "Cloud Plan · 让计划清晰",
+  title: "Cloud Plan · 让计划灵活",
   description: "每日清单与长期任务四象限，让每一步都有方向。",
   robots: { index: false, follow: false },
   applicationName: "Cloud Plan",

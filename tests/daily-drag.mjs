@@ -30,6 +30,7 @@ try {
     await page.goto('http://127.0.0.1:5173');
     const targetDate = shiftDate(weekStart(today), today === weekStart(today) ? 1 : 0);
     for (const task of [daily, step]) {
+      await page.locator(".task-list").getByLabel(`任务操作：${task.title}`, {exact:true}).click();
       const handle = page.getByRole('button', { name: `拖动安排日期：${task.title}`, exact: true });
       await handle.scrollIntoViewIfNeeded();
       const box = await handle.boundingBox();
@@ -42,7 +43,7 @@ try {
       await page.locator('.schedule-drop-days .date-drop-target').waitFor();
       await page.mouse.up();
       await handle.waitFor({ state: 'hidden' });
-      await page.waitForFunction(() => document.querySelector('.sync-status')?.textContent?.includes('已同步'));
+      await page.getByTitle('立即同步',{exact:true}).click();await page.waitForFunction(() => document.querySelector('.sync-status')?.textContent?.includes('已同步'));
       const moved = state.tasks.find(t => t.id === task.id);
       assert.equal(moved.plannedDate, targetDate);
       assert.equal(moved.parentId, task.parentId);
@@ -50,7 +51,7 @@ try {
       assert.equal(state.tasks.length, 3);
     }
     await page.getByLabel('计划日期', { exact: true }).fill(targetDate);
-    for (const task of [daily, step]) await page.getByRole('button', { name: `拖动安排日期：${task.title}`, exact: true }).waitFor();
+    for (const task of [daily, step]) { await page.locator(".task-list").getByLabel(`任务操作：${task.title}`, {exact:true}).focus();await page.keyboard.press("Enter"); await page.getByRole('button', { name: `拖动安排日期：${task.title}`, exact: true }).waitFor(); }
     await page.getByRole('button', { name: `拖动安排日期：${daily.title}`, exact: true }).focus();
     await page.keyboard.press('Enter');
     await page.keyboard.press('Escape');

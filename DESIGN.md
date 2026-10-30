@@ -1,32 +1,16 @@
-# Cloud Plan · 晴空编辑部
+# Cloud Plan · 蓝白工作台
 
-> **2026-10-30 最新视觉定稿已批准，尚未实施。** 后续 UI 更新以 [定稿目录](docs/ui-approved-2026-10-30/README.md) 中 8 张图和 [实施交接](docs/ui-approved-2026-10-30/HANDOFF.md) 为准。下文记录当前已实现的历史视觉体系；与定稿冲突时（如衬线标题、旧四象限表现）由新定稿覆盖。原有业务/交互约束继续有效。完成实施后再将本文同步为实际设计系统。
-User-selected direction A. Replaces the former warm-paper/forest identity.
+2026-10-30 按 [批准交接](docs/ui-approved-2026-10-30/HANDOFF.md) 实施。页面模式为 Operate；欢迎页延续同一视觉系统。实际截图见 docs/images，验收记录见 docs/ui-approved-2026-10-30/IMPLEMENTATION.md。
 
-## Palette
-Cloud white #FBFDFF, paper #FFFFFF, sky #EAF5FF, action blue #2167B5, ink #17324D, secondary text #526B83. Amber/red remain meaningful deadline, priority, and error states. Charts retain distinct category colors.
+## 视觉系统
+云白背景 #F6F8FC、白色内容面、深蓝正文 #172B4D、操作蓝 #2463DB、次要文字 #65758B、浅蓝选中 #ECF3FF。字体为系统中文无衬线，页面标题 29–36px、区块标题 20–24px、任务 15–16px、辅助内容 12–14px。内容最大宽 1440px；桌面边距 64px，手机 16px。控件圆角 6–8px，命中区通常至少 44px。
 
-## Type
-Locally hosted Noto Serif SC subset for page/section headings; Segoe UI/PingFang SC/Microsoft YaHei for controls and task content. Task text 16px, supporting text 12–14px; page titles 29px mobile and 30–44px desktop. OFL license retained with font.
+## 页面与响应式
+顶部横向导航，选中蓝色下划线；手机保留五项底部导航。每日页面顶部七日历，左清单、右周重点；完成进度为细条，已完成与往日未完成折叠。周重点使用 Flag，项目使用 FolderOpen。任务省略号菜单保留排序、标记重点、拖动改期、撤回、删除，支持键盘、Escape 和点击外部关闭。
 
-## Layout
-Fine-rule top navigation, no dark side rail. Desktop daily page: task list/progress at left and weekly focus/date navigator at right. Mobile: task-first vertical flow and five-item bottom nav. Goals keep both matrix and list; habit cards preserve 21-day grid; records retain charts, filtering, detail and export.
+项目列表保留层级连线、展开、进度、日期、子项目/子任务操作。四象限采用白色共享画布、外围虚线和中央实线坐标轴：重要向上、紧急向左；类别小圆点红黄蓝灰。各区使用独立测量和碰撞模拟，轴线间留出空间，嵌套椭圆气泡保留，直属子项目超过三个时省略父级气泡。截止日期继续用任务卡蓝色深浅编码。悬停、焦点、展开详情暂停漂浮，减少动画时静止；手机纵向/分类单区显示。
 
-## Components
-4–8px corners, fine borders, no decorative shadows or nested panels. 44px icon buttons and visible focus. 4/8/12/16/24/32/48/64px spacing scale; 1440px content limit; responsive transitions at 640, 850, 1150px. Viewport overflow must be checked at 360,390,820,1360px.
+习惯桌面两列、手机单列，每卡 21 格，今日、已完成、漏打、未来状态区分。工作时长及完成量图桌面并排，窄屏堆叠。设置为同步、备份、设备密钥三个横向分区，窄屏换行。欢迎页口号为“让计划灵活，让生活轻盈。”，示意任务静态且不读取真实数据。
 
-## Scope
-All labels, functionality, data, API contracts, key protection, sync, task/goal/habit operations and backup flows remain unchanged. UI UX Pro Max Swiss/editorial grid recommendations adapted to the selected blue/white palette; marketing storytelling recommendations do not apply to this working app.
-
-## 四象限任务卡片
-按用户草图，四象限使用十字分区和独立白色浮动任务卡片；柔和阴影用于表达可拖动。拖动时显示跟随卡片及四象限投放面板，手机保留分类筛选和纵向布局。
-
-四象限以蓝色深浅区分紧急程度，以背景透明度区分重要程度；文字始终保持不透明。任务卡片按文字自适应宽度、居中留白，截止日期越近底色越深，过期最深，无日期或超过两周最浅；重要任务底色更实。
-
-象限内使用测量驱动的错落空间布局：任务尺寸与容器宽度决定位置，卡片之间预留完整游动和旋转范围。位置由任务标识稳定决定；展开详情、增删任务或调整窗口后重新排布，保持阅读顺序及现有拖动交互。
-
-四象限按项目层级呈现嵌套泡泡，同一项目在不同象限各显示该象限的未完成任务，子项目在父项目内。每层独立进行边界约束和碰撞避让的连续游动；悬停、焦点或详情展开时暂停该分支，减少动态效果偏好下完全静止。保留标题自适应、截止日期蓝色深浅及原有拖动分类功能。
-
-项目泡泡采用真正的椭圆边界，内部按椭圆宽度紧凑排布，大子项目位于腰部、小任务分布两端；按轮廓计算游动边界，缩小内部间距与高度，将更多空白留给外层流动。
-
-直属子项目超过 3 个的项目在四象限中省略该层泡泡；子项目与直属子任务提升到最近可见层级。按真实项目树计数，不因象限筛选改变，项目数据和归属保持不变。
+## 业务边界
+保留数据/API/认证契约、30秒防抖同步、冲突处理、北京时间语义、导入预览及先备份再替换、完成/删除确认、网页工作时长模型。图中的示例时间不引入任务工时、后台提醒或新的认证能力。样式按页面集中维护在 app/redesign.css，globals.css 保留基础和原交互样式。

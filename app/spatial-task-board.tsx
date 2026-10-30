@@ -1,5 +1,6 @@
 "use client";
 import {Children, isValidElement, useLayoutEffect, useRef, type ReactNode} from "react";
+import {FolderOpen} from "lucide-react";
 import type {Task} from "../lib/planner";
 
 function variation(value: string) {
@@ -52,7 +53,7 @@ function BubbleArena({children}: {children: ReactNode}) {
         y+=h+gap;
       }
       const contentHeight=Math.max(0,y-gap);
-      height=contentHeight+(nested?24:180);
+      height=contentHeight+(nested?24:64);
       if(nested)for(const b of bodies)for(const [px,py] of outline(b)){
         const nx=(px-width/2)/(width/2);
         height=Math.max(height,2*Math.abs(py-contentHeight/2)/Math.sqrt(Math.max(.01,1-nx*nx))+24);
@@ -110,6 +111,6 @@ export default function SpatialTaskBoard({children,tasks}: {children: ReactNode;
     for(const p of path){if(!level.has(p.id))level.set(p.id,{task:p,children:new Map(),cards:[]});branch=level.get(p.id)!;level=branch.children;}
     if(branch)branch.cards.push(card);else loose.push(card);
   }
-  const render=(branches:Map<string,Branch>):ReactNode=>Array.from(branches.values()).map(b=><section className="project-bubble" data-bubble-id={b.task.id} aria-label={b.task.title} key={b.task.id}><h3 className="project-bubble-title">{b.task.title}</h3><BubbleArena>{render(b.children)}{b.cards}</BubbleArena></section>);
+  const render=(branches:Map<string,Branch>):ReactNode=>Array.from(branches.values()).map(b=><section className="project-bubble" data-bubble-id={b.task.id} aria-label={b.task.title} key={b.task.id}><h3 className="project-bubble-title"><FolderOpen size={19} style={{display:"inline",marginRight:8,color:"var(--green)"}}/>{b.task.title}</h3><BubbleArena>{render(b.children)}{b.cards}</BubbleArena></section>);
   return <div className="goal-list spatial-task-board"><BubbleArena>{render(roots)}{loose}</BubbleArena></div>;
 }
