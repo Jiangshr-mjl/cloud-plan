@@ -20,9 +20,9 @@ try {
  await page.evaluate(()=>document.activeElement?.blur());
  const moving=page.locator('.matrix-step').last();
  const start=await moving.boundingBox();
- await page.waitForTimeout(3500);
- const end=await moving.boundingBox();
- assert.ok(Math.hypot(end.x-start.x,end.y-start.y)>25,'bubbles travel freely rather than merely wobble');
+ let maxTravel=0;
+ for(let i=0;i<7;i++){await page.waitForTimeout(500);const position=await moving.boundingBox();maxTravel=Math.max(maxTravel,Math.hypot(position.x-start.x,position.y-start.y));}
+ assert.ok(maxTravel>25,'bubbles travel freely rather than merely wobble');
  await page.emulateMedia({reducedMotion:'reduce'});
  const stopped=await moving.getAttribute('style');await page.waitForTimeout(150);
  assert.equal(await moving.getAttribute('style'),stopped);

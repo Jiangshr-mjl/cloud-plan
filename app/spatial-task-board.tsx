@@ -1,6 +1,6 @@
 "use client";
 import {Children, isValidElement, useLayoutEffect, useRef, type ReactNode} from "react";
-import {FolderOpen} from "lucide-react";
+import {Folder,MoreHorizontal} from "lucide-react";
 import type {Task} from "../lib/planner";
 
 function variation(value: string) {
@@ -28,7 +28,7 @@ function BubbleArena({children}: {children: ReactNode}) {
       const next = `${width}|${elements.map(el=>`${el.dataset.bubbleId || el.dataset.taskId}:${el.offsetWidth}:${el.offsetHeight}`).join("|")}`;
       if (!width || signature === next) return;
       signature = next;
-      const gap = nested ? 10 : 32;
+      const gap = nested ? 16 : 32;
       const inset = nested ? width * .12 : 16;
       const rows: typeof bodies[] = [];
       let row: typeof bodies = [], used = 0;
@@ -53,7 +53,7 @@ function BubbleArena({children}: {children: ReactNode}) {
         y+=h+gap;
       }
       const contentHeight=Math.max(0,y-gap);
-      height=contentHeight+(nested?24:40);
+      height=contentHeight+(nested?(bodies.length>1?48:24):(bodies.length>1?64:40));
       if(nested)for(const b of bodies)for(const [px,py] of outline(b)){
         const nx=(px-width/2)/(width/2);
         height=Math.max(height,2*Math.abs(py-contentHeight/2)/Math.sqrt(Math.max(.01,1-nx*nx))+24);
@@ -95,7 +95,7 @@ function BubbleArena({children}: {children: ReactNode}) {
 }
 
 type Branch={task:Task; children:Map<string,Branch>; cards:ReactNode[]};
-export default function SpatialTaskBoard({children,tasks}: {children: ReactNode;tasks:Task[]}) {
+export default function SpatialTaskBoard({children,tasks,onEditProject}: {children: ReactNode;tasks:Task[];onEditProject:(task:Task)=>void}) {
   const roots=new Map<string,Branch>(),byId=new Map(tasks.map(t=>[t.id,t]));
   // Count the real hierarchy, not only branches with tasks in this quadrant.
   const childProjectCounts=new Map<string,number>();
@@ -111,6 +111,7 @@ export default function SpatialTaskBoard({children,tasks}: {children: ReactNode;
     for(const p of path){if(!level.has(p.id))level.set(p.id,{task:p,children:new Map(),cards:[]});branch=level.get(p.id)!;level=branch.children;}
     if(branch)branch.cards.push(card);else loose.push(card);
   }
-  const render=(branches:Map<string,Branch>):ReactNode=>Array.from(branches.values()).map(b=><section className="project-bubble" data-bubble-id={b.task.id} aria-label={b.task.title} key={b.task.id}><h3 className="project-bubble-title"><FolderOpen size={19} style={{display:"inline",marginRight:8,color:"var(--green)"}}/>{b.task.title}</h3><BubbleArena>{render(b.children)}{b.cards}</BubbleArena></section>);
+  const countCards=(branch:Branch):number=>branch.cards.length+[...branch.children.values()].reduce((sum,child)=>sum+countCards(child),0);
+  const render=(branches:Map<string,Branch>):ReactNode=>Array.from(branches.values()).map(b=><section className="project-bubble" data-bubble-id={b.task.id} aria-label={b.task.title} key={b.task.id}><div className="project-bubble-heading"><h3 className="project-bubble-title"><Folder size={24} aria-hidden="true"/>{b.task.title}</h3><span className="bubble-task-count">{countCards(b)} 项任务</span><button className="bubble-project-menu" aria-label={`编辑气泡项目：${b.task.title}`} title="编辑项目" onClick={()=>onEditProject(b.task)}><MoreHorizontal size={20}/></button></div><BubbleArena>{render(b.children)}{b.cards}</BubbleArena></section>);
   return <div className="goal-list spatial-task-board"><BubbleArena>{render(roots)}{loose}</BubbleArena></div>;
 }

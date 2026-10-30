@@ -4,7 +4,11 @@ import {readFile,writeFile} from 'node:fs/promises';
 const svg=await readFile('public/favicon.svg');
 for(const size of [32,192,512])await sharp(svg).resize(size,size).png().toFile(`public/icons/cloud-plan-${size}.png`);
 await sharp(svg).resize(180,180).png().toFile('public/apple-touch-icon.png');
-const maskable=svg.toString().replace('rx="112"','rx="0"');
+const maskable=svg.toString()
+  .replace('viewBox="96 88 320 320"','viewBox="0 0 512 512"')
+  .replace('fill="#0866ff"','fill="#ffffff"')
+  .replace('stroke="#ffffff"','stroke="#0866ff"')
+  .replace(/(<svg[^>]*>)/,'$1<rect width="512" height="512" fill="#0866ff"/>');
 await sharp(Buffer.from(maskable)).resize(512,512).png().toFile('public/icons/cloud-plan-maskable-512.png');
 const sizes=[16,32,48,64,128,256],images=await Promise.all(sizes.map(size=>sharp(svg).resize(size,size).png().toBuffer()));
 const header=Buffer.alloc(6+sizes.length*16);header.writeUInt16LE(1,2);header.writeUInt16LE(sizes.length,4);let offset=header.length;
