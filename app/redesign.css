@@ -74,3 +74,11 @@ body{font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}.cloud-il
 .history-search{display:flex;align-items:center;gap:10px;padding:10px 14px;margin:20px 0 12px;border:1px solid var(--line);border-radius:12px;background:var(--paper,#fff);color:var(--muted);min-width:0}.history-search:focus-within{border-color:#2167b5;box-shadow:0 0 0 3px #2167b51a}.history-search input{flex:1;min-width:0;min-height:32px;border:0;background:transparent;color:var(--ink);outline:none;font:inherit}.history-search span{font-size:12px;white-space:nowrap}.history-search svg{flex-shrink:0}@media(max-width:600px){.history-search span{display:none}}
 
 .history-view-switch{margin:0 0 16px}.history-project-group .history-day h2{display:flex;align-items:center;gap:8px;overflow-wrap:anywhere;min-width:0}.history-project-group .history-day h2 svg{flex-shrink:0}.history-project-meta{display:flex;flex-wrap:wrap;gap:8px 16px;padding:14px 20px 0;color:var(--muted);font-size:12px;overflow-wrap:anywhere}.history-project-meta time{margin-left:auto}.history-project-group .history-day{gap:12px}.history-project-group .history-day>span{flex-shrink:0}
+
+@media(max-width:640px){
+  .priority-matrix .quadrant:nth-child(n){grid-area:auto}
+  .priority-matrix .quadrant-grid{grid-template-columns:minmax(0,1fr)}
+  .priority-matrix .matrix-step .task-main{min-width:0}
+  .priority-matrix .matrix-step .task-title{font-size:15px}
+  .priority-matrix .matrix-step .row-tools{width:100%;justify-content:flex-end}
+}
