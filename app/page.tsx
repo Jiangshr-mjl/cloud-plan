@@ -140,7 +140,7 @@ export default function Planner() {
   function newTask(kind: Task["kind"] = "daily", parentId: string | null = null, q = 1) {
     if (pending.current || (quickQueue.current && (kind !== "daily" || error)) || (inFlight.current && !quickQueue.current)) { setNotice("请先处理尚未保存的操作。"); return; }
     setDraftRevision(snapshot?.revision ?? 0);
-    setDraft({ id: crypto.randomUUID(), kind, parentId, title: "", notes: "", plannedDate: kind === "weekly" ? weekStart(selectedDate) : kind === "daily" ? selectedDate : "", dueDate: "", important: QUADRANTS[q].important, urgent: QUADRANTS[q].urgent, order: Math.min(1000000, Math.max(0, ...tasks.map(t => t.order)) + 1), isNew: true });
+    setDraft({ id: crypto.randomUUID(), kind, parentId, title: "", notes: "", plannedDate: kind === "weekly" ? weekStart(selectedDate) : kind === "daily" ? selectedDate : "", dueDate: kind === "step" ? tasks.find(t => t.id === parentId && t.kind === "goal")?.dueDate ?? "" : "", important: QUADRANTS[q].important, urgent: QUADRANTS[q].urgent, order: Math.min(1000000, Math.max(0, ...tasks.map(t => t.order)) + 1), isNew: true });
   }
   function edit(task: Task) { if (pending.current || quickQueue.current) return; setDraftRevision(snapshot?.revision ?? 0); setDraft({ ...task, plannedDate: task.plannedDate ?? "", dueDate: task.dueDate ?? "", isNew: false }); }
   function closeDraft() { if ((busy && !(draft?.isNew && draft.kind === "daily" && quickQueue.current)) || !window.confirm("关闭编辑？尚未保存的输入将被舍弃。")) return; setDraft(null); if (!quickQueue.current) { pending.current = null; setError(""); setConflict(false); } }
