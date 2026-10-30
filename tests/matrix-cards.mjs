@@ -17,6 +17,13 @@ try {for(const width of [1360,390]) {
  await page.getByRole('button',{name:'子任务四象限',exact:true}).click();
  const card=page.locator('.matrix-step').first();
  assert.equal(await card.evaluate(n=>getComputedStyle(n).animationName),'task-drift');
+ const motion=await page.locator('.matrix-step').evaluateAll(nodes=>nodes.map(n=>({duration:getComputedStyle(n).animationDuration,path:n.style.getPropertyValue('--drift-x0')})));
+ assert.ok(new Set(motion.map(m=>m.duration)).size>1);
+ assert.ok(new Set(motion.map(m=>m.path)).size>1);
+ for(const progress of [0,.2,.4,.6,.8,1]) {
+   const escaped=await page.locator('.matrix-step').evaluateAll((nodes,p)=>nodes.filter(n=>{const a=n.getAnimations()[0];a.pause();a.currentTime=Number(a.effect.getTiming().duration)*p;const r=n.getBoundingClientRect(),q=n.closest('.quadrant').getBoundingClientRect();return r.left<q.left || r.right>q.right || r.top<q.top || r.bottom>q.bottom;}).length,progress);
+   assert.equal(escaped,0,'drifting cards stay inside their quadrant');
+ }
  await page.emulateMedia({reducedMotion:'reduce'});
  assert.equal(await card.evaluate(n=>getComputedStyle(n).animationName),'none');
  await page.emulateMedia({reducedMotion:'no-preference'});
