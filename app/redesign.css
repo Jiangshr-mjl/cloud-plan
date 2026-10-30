@@ -149,3 +149,28 @@ body{font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}.cloud-il
 .priority-matrix .goal-list.spatial-task-board{display:block;position:relative;padding:0;min-height:130px;width:100%}.priority-matrix .spatial-task-board>.matrix-step{position:absolute;left:32px;top:32px;max-width:min(320px,calc(100% - 80px));margin:0}.spatial-task-board>.matrix-empty{margin:0;padding:32px 24px}
 
 .priority-matrix .spatial-task-board>.matrix-step{width:max-content}.priority-matrix .spatial-task-board>.matrix-card-expanded{width:320px}
+
+/* Nested project habitats: the boundary communicates ownership, not priority. */
+.priority-matrix .spatial-task-board {display:block;padding:0;width:100%;min-width:0}
+.bubble-arena {position:relative;width:100%;min-width:0;min-height:100px}
+.priority-matrix .bubble-arena > .project-bubble,
+.priority-matrix .bubble-arena > .matrix-step {position:absolute;left:0;top:0;margin:0;animation:none!important;transition:none;will-change:transform}
+.priority-matrix .bubble-arena > .project-bubble {width:calc(100% - 48px);max-width:620px;border:1px solid rgb(64 132 191 / 36%);border-radius:48px;background:rgb(251 253 255 / 48%);padding:20px 12px 12px;box-sizing:border-box}
+.priority-matrix .project-bubble .project-bubble {background:rgb(233 246 255 / 58%);border-radius:36px;width:calc(100% - 40px);padding:16px 8px 8px}
+.project-bubble-title {font-family:inherit;font-size:15px;line-height:1.5;font-weight:650;color:#234e77;text-align:center;margin:0 16px 8px;overflow-wrap:anywhere}
+.priority-matrix .bubble-arena > .matrix-step {width:max-content;max-width:calc(100% - 32px);border-radius:28px}
+.priority-matrix .bubble-arena > .matrix-card-expanded {width:320px;border-radius:24px}
+.priority-matrix .bubble-arena .matrix-task-name {border-radius:inherit}
+.priority-matrix .bubble-arena > .matrix-empty {padding:24px;margin:0}
+@media(max-width:640px){
+ .priority-matrix .bubble-arena > .project-bubble {width:calc(100% - 32px);padding:16px 2px 8px;border-radius:32px}
+ .priority-matrix .project-bubble .project-bubble {width:calc(100% - 32px);padding:12px 0 4px;border-radius:28px}
+ .project-bubble-title {font-size:14px;margin-inline:8px}
+ .priority-matrix .bubble-arena .matrix-task-name {padding:12px 10px}
+}
+.priority-matrix .bubble-arena > .project-bubble {border-radius:120px / 100px;padding-block:28px}
+.priority-matrix .project-bubble .project-bubble {border-radius:90px / 80px;padding-block:24px}
+@media(max-width:640px){
+ .priority-matrix .bubble-arena > .project-bubble,
+ .priority-matrix .project-bubble .project-bubble {border-radius:70px / 90px;padding-block:24px}
+}
