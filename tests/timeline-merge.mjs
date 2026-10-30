@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {chromium} from 'playwright';
+const browser=await chromium.launch({channel:'msedge'});
+try {for(const width of [1360,390]) {
+  const page=await browser.newPage({viewport:{width,height:1000}});
+  const now=new Date().toISOString();
+  const root={id:randomUUID(),kind:'goal',parentId:null,title:'合并项目',notes:'',plannedDate:null,dueDate:'2027-05-20',important:true,urgent:false,order:0,completedAt:null,createdAt:now,updatedAt:now,version:0};
+  const sub={...root,id:randomUUID(),parentId:root.id,title:'同日子项目'};
+  const leaf={...root,id:randomUUID(),kind:'step',parentId:sub.id,title:'同日子任务',plannedDate:'2027-05-10'};
+  const separate={...leaf,id:randomUUID(),parentId:root.id,title:'不同日任务',plannedDate:null,dueDate:'2027-05-15'};
+  const other={...root,id:randomUUID(),title:'独立项目'};
+  await page.route('**/api/planner',r=>r.fulfill({json:{revision:0,tasks:[root,sub,leaf,separate,other]}}));
+  await page.addInitScript(()=>localStorage.setItem('daylight.access-key','timeline-merge-key-00000000000000'));
+  await page.goto('http://127.0.0.1:5173');
+  await page.getByRole('navigation').getByRole('button',{name:'项目管理',exact:true}).click();
+  await page.getByRole('button',{name:'时间轴',exact:true}).click();
+  await page.locator('.project-timeline').waitFor();
+  assert.equal(await page.locator('.timeline-entry').count(),3);
+  assert.deepEqual(await page.locator('.timeline-group').evaluateAll(ns=>ns.map(n=>n.dataset.timelineDate)),['2027-05-15','2027-05-20']);
+  assert.equal(await page.locator(`[data-project-id="${sub.id}"]`).count(),1);
+  assert.equal(await page.locator('.task-title').filter({hasText:'同日子任务'}).count(),1);
+  const project=page.locator(`[data-project-id="${root.id}"]`);
+  await project.locator(':scope > summary').click();
+  await page.locator(`[data-project-id="${sub.id}"] > summary`).click();
+  assert.equal(await page.getByRole('button',{name:'编辑：同日子任务',exact:true}).isVisible(),true);
+  assert.equal(await project.getByRole('button',{name:'编辑：不同日任务',exact:true}).count(),0);
+  await page.getByRole('button',{name:'编辑：同日子任务',exact:true}).click();
+  assert.equal(await page.getByLabel('截止日期').inputValue(),'2027-05-20');
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+  console.log(width,'nested same-deadline merge, unique rows, distinct dates and editing passed');
+  await page.close();
+}} finally {await browser.close();}
