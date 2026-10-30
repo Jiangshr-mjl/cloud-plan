@@ -16,9 +16,19 @@ try {for(const width of [1360,390]) {
   await page.addInitScript(()=>localStorage.setItem('daylight.access-key','history-projects-key-000000000000'));
   await page.goto('http://127.0.0.1:5173');
   await page.getByRole('navigation').getByRole('button',{name:'工作记录',exact:true}).click();
+  const dateGroup=page.locator('[data-history-date="2026-10-30"]');
+  assert.equal(await dateGroup.getAttribute('open'),null);
+  assert.equal(await dateGroup.getByRole('button',{name:'取消完成：已完成设计',exact:true}).isVisible(),false);
+  await dateGroup.locator(':scope > summary').click();
+  assert.equal(await dateGroup.getByRole('button',{name:'取消完成：已完成设计',exact:true}).isVisible(),true);
+  await dateGroup.locator(':scope > summary').focus();
+  await page.keyboard.press('Enter');
+  assert.equal(await dateGroup.getAttribute('open'),null);
   await page.getByRole('button',{name:'按项目',exact:true}).click();
   assert.equal(await page.locator('.history-project-group').count(),2);
   const group=page.locator(`[data-history-project="${root.id}"]`);
+  assert.equal(await group.getAttribute('open'),null);
+  assert.ok(await group.locator(':scope > summary h2').evaluate(n=>parseFloat(getComputedStyle(n).fontSize))>=18);
   assert.equal(await group.locator('.task-title').count(),2);
   assert.equal(await group.locator('.history-project-meta').filter({hasText:'子项目乙'}).count(),1);
   await page.getByRole('searchbox',{name:'搜索已完成任务'}).fill('设计');
@@ -30,6 +40,7 @@ try {for(const width of [1360,390]) {
   await page.getByLabel('完成日期筛选',{exact:true}).fill('2026-10-29');
   assert.deepEqual(await page.locator('.history-card .task-title').allTextContents(),['已完成复核']);
   await page.getByRole('button',{name:'清除筛选',exact:true}).click();
+  await group.locator(':scope > summary').click();
   await page.getByRole('button',{name:'取消完成：已完成设计',exact:true}).click();
   await page.getByRole('button',{name:'取消完成：已完成设计',exact:true}).waitFor({state:'hidden'});
   await page.waitForFunction(()=>document.querySelector('.sync-status')?.textContent?.includes('已同步'));

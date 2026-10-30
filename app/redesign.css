@@ -82,3 +82,5 @@ body{font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}.cloud-il
   .priority-matrix .matrix-step .task-title{font-size:15px}
   .priority-matrix .matrix-step .row-tools{width:100%;justify-content:flex-end}
 }
+
+.history-group+.history-group{border-top:1px solid var(--line)}.history-group>summary.history-day{display:flex;align-items:center;gap:12px;min-height:72px;margin:0;padding:20px;cursor:pointer;list-style:none}.history-group>summary::-webkit-details-marker{display:none}.history-group>summary.history-day h2{flex:1;min-width:0;margin:0;font-size:20px;font-weight:600;line-height:1.5;overflow-wrap:anywhere}.history-group>summary.history-day>span{flex-shrink:0;font-size:13px}.history-chevron{flex-shrink:0}.history-group[open]>summary .history-chevron{transform:rotate(90deg)}@media(max-width:640px){.history-group>summary.history-day{padding:16px 12px;gap:8px;min-height:68px}.history-group>summary.history-day h2{font-size:18px}}
