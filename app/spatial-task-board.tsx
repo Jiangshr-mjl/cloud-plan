@@ -96,13 +96,16 @@ function BubbleArena({children}: {children: ReactNode}) {
 type Branch={task:Task; children:Map<string,Branch>; cards:ReactNode[]};
 export default function SpatialTaskBoard({children,tasks}: {children: ReactNode;tasks:Task[]}) {
   const roots=new Map<string,Branch>(),byId=new Map(tasks.map(t=>[t.id,t]));
+  // Count the real hierarchy, not only branches with tasks in this quadrant.
+  const childProjectCounts=new Map<string,number>();
+  for(const task of tasks)if(task.kind === "goal" && task.parentId)childProjectCounts.set(task.parentId,(childProjectCounts.get(task.parentId) || 0)+1);
   const loose:ReactNode[]=[];
   for(const card of Children.toArray(children)) {
     if(!isValidElement<{"data-task-id"?:string}>(card) || !card.props["data-task-id"]){loose.push(card);continue;}
     const task=byId.get(card.props["data-task-id"]!);
     const path:Task[]=[],seen=new Set<string>();
     let parent=task?.parentId;
-    while(parent && !seen.has(parent)){seen.add(parent);const p=byId.get(parent);if(!p)break;path.unshift(p);parent=p.parentId;}
+    while(parent && !seen.has(parent)){seen.add(parent);const p=byId.get(parent);if(!p)break;if((childProjectCounts.get(p.id) || 0)<=3)path.unshift(p);parent=p.parentId;}
     let level=roots,branch:Branch|undefined;
     for(const p of path){if(!level.has(p.id))level.set(p.id,{task:p,children:new Map(),cards:[]});branch=level.get(p.id)!;level=branch.children;}
     if(branch)branch.cards.push(card);else loose.push(card);
