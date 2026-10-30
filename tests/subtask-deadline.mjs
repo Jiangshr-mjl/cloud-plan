@@ -15,7 +15,7 @@ try {
   await page.getByRole('navigation').getByRole('button',{name:'项目管理',exact:true}).click();
   await page.getByRole('button',{name:'项目列表',exact:true}).click();
   const card=page.locator(`[data-project-id="${project.id}"]`);
-  await card.locator(':scope > summary').click();
+  await card.locator(':scope > summary').click();await card.locator('.project-settings>summary').click();
   for(const [title,date] of [['默认日期','2027-05-20'],['自选日期','2027-05-15'],['清空日期','']]) {
     await card.getByRole('button',{name:'添加子任务',exact:true}).click();
     const due=page.getByLabel('截止日期');
@@ -28,7 +28,7 @@ try {
     assert.equal(state.tasks.find(t=>t.title===title).dueDate,date||null);
   }
   const emptyCard=page.locator(`[data-project-id="${undated.id}"]`);
-  await emptyCard.locator(':scope > summary').click();
+  await emptyCard.locator(':scope > summary').click();await emptyCard.locator('.project-settings>summary').click();
   await emptyCard.getByRole('button',{name:'添加子任务',exact:true}).click();
   assert.equal(await page.getByLabel('截止日期').inputValue(),'');
   assert.equal(state.tasks[0].dueDate,'2027-05-20');

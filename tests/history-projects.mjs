@@ -43,7 +43,7 @@ try {for(const width of [1360,390]) {
   await group.locator(':scope > summary').click();
   await page.getByRole('button',{name:'取消完成：已完成设计',exact:true}).click();
   await page.getByRole('button',{name:'取消完成：已完成设计',exact:true}).waitFor({state:'hidden'});
-  await page.waitForFunction(()=>document.querySelector('.sync-status')?.textContent?.includes('已同步'));
+  await page.getByTitle('立即同步',{exact:true}).click();await page.waitForFunction(()=>document.querySelector('.sync-status')?.textContent?.includes('已同步'));
   assert.equal(state.tasks.find(t=>t.id===done.id).completedAt,null);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   console.log(width,'project grouping, nested paths, search/date filters, switching and undo passed');

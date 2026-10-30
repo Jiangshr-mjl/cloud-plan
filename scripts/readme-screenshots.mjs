@@ -39,7 +39,7 @@ try {
  await page.locator('summary').filter({hasText:'完成个人作品集'}).click();
  await page.locator('summary').filter({hasText:'内容与视觉设计'}).click();await capture('goals-list');
  await page.getByRole('button',{name:'子任务四象限',exact:true}).click();await capture('goals');await page.getByRole('button',{name:'时间轴',exact:true}).click();await capture('timeline'); await nav('21天习惯养成');await capture('habits');
- await nav('工作记录');await page.locator('.work-summary strong').first().filter({hasText:'2 小时'}).waitFor();await capture('work');await page.getByRole('button',{name:'按项目',exact:true}).click();await capture('history-projects');
+ await nav('工作记录');await page.locator('.work-summary strong').first().filter({hasText:'2小时'}).waitFor();await capture('work');await page.getByRole('button',{name:'按项目',exact:true}).click();await capture('history-projects');
  await nav('设置与备份');await capture('settings');
  await page.setViewportSize({width:390,height:1050});await nav('21天习惯养成');await capture('mobile');
  if(errors.length)throw new Error(errors.join('\n'));
