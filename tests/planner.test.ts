@@ -227,6 +227,49 @@ test("多层项目保留关联、周目标不复制、删除清理全部后代�
  assert.throws(()=>applyOperation(items,{type:"edit",id:root.id,changes:{weekDate:"2026-10-20"}},2,now));
 });
 
+test("项目截止日期逐层补全和收紧，保留较早日期及任务关联", () => {
+ const root=task({kind:"goal",plannedDate:null,dueDate:null});
+ const early=task({kind:"goal",parentId:root.id,plannedDate:null,dueDate:"2026-11-05"});
+ const late=task({kind:"goal",parentId:root.id,plannedDate:null,dueDate:"2026-12-01"});
+ const blank=task({kind:"goal",parentId:late.id,plannedDate:null,dueDate:null});
+ const leaf=task({kind:"step",parentId:early.id,dueDate:null});
+ const lateLeaf=task({kind:"step",parentId:blank.id,dueDate:"2026-12-15"});
+ const earlyLeaf=task({kind:"step",parentId:root.id,dueDate:"2026-11-01"});
+ const equal=task({kind:"step",parentId:root.id,dueDate:"2026-11-10"});
+ const other=task({kind:"goal",plannedDate:null,dueDate:null});
+ const items=[lateLeaf,root,early,late,blank,leaf,earlyLeaf,equal,other];
+ const result=applyOperation(items,{type:"edit",id:root.id,changes:{dueDate:"2026-11-10"}},9,now);
+ const expected=["2026-11-10","2026-11-10","2026-11-05","2026-11-10","2026-11-10","2026-11-05","2026-11-01","2026-11-10",null];
+ assert.deepEqual(result.map(t=>t.dueDate),expected);
+ for(const [i,before] of items.entries()) {
+   const changed=before.id===root.id || before.dueDate!==expected[i];
+   assert.deepEqual(result[i],changed?{...before,dueDate:expected[i],updatedAt:now,version:9}:before);
+ }
+ assert.equal(root.dueDate,null);assert.equal(leaf.dueDate,null);
+});
+
+test("清空项目日期或编辑其他字段不改变下级日期，延后只补全空日期", () => {
+ const root=task({kind:"goal",plannedDate:null,dueDate:"2026-11-10"});
+ const child=task({kind:"step",parentId:root.id,dueDate:"2026-11-10"});
+ const blank=task({kind:"step",parentId:root.id,dueDate:null});
+ for(const changes of [{dueDate:null},{title:"改名"}]) {
+   const result=applyOperation([root,child,blank],{type:"edit",id:root.id,changes},2,now);
+   assert.deepEqual(result.slice(1),[child,blank]);
+ }
+ const later=applyOperation([root,child,blank],{type:"edit",id:root.id,changes:{dueDate:"2026-11-20"}},2,now);
+ assert.equal(later[1].dueDate,"2026-11-10");assert.equal(later[2].dueDate,"2026-11-20");
+});
+
+test("编辑子项目只同步其后代，重复保存相同截止日期也能补全下级", () => {
+ const root=task({kind:"goal",plannedDate:null,dueDate:"2026-11-20"});
+ const child=task({kind:"goal",parentId:root.id,plannedDate:null,dueDate:"2026-11-10"});
+ const leaf=task({kind:"step",parentId:child.id,dueDate:null,completedAt:now});
+ const sibling=task({kind:"step",parentId:root.id,dueDate:null});
+ const result=applyOperation([root,child,leaf,sibling],{type:"edit",id:child.id,changes:{dueDate:"2026-11-10"}},2,now);
+ assert.deepEqual(result[0],root);assert.deepEqual(result[3],sibling);
+ assert.equal(result[2].dueDate,"2026-11-10");assert.equal(result[2].completedAt,now);
+});
+
 test("项目移动保留后代与计划，拒绝循环和非项目目标", () => {
  const a=task({kind:"goal",plannedDate:null,weekDate:"2026-10-19"}), b=task({kind:"goal",plannedDate:null}), child=task({kind:"step",parentId:a.id}); const items=[a,b,child];
  const moved=applyOperation(items,{type:"moveProject",id:a.id,parentId:b.id},2,now);

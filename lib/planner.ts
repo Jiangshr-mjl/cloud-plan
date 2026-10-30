@@ -83,7 +83,30 @@ export function applyOperation(tasks: Task[], op: Operation, revision: number, n
       if (next.some(t => t.id === op.task.id)) throw new Error("任务已存在，请刷新核对，避免重复添加");
       next.push({ ...op.task, completedAt: null, createdAt: now, updatedAt: now, version: revision });
       break;
-    case "edit": { const task = find(op.id); if(op.changes.habit && JSON.stringify(op.changes.habit.checks)!==JSON.stringify(task.habit?.checks)) throw new Error("请通过打卡按钮修改记录"); if(task.kind === "habit" && task.habit?.checks.length && op.changes.plannedDate && op.changes.plannedDate!==task.plannedDate) throw new Error("已有打卡的习惯不能修改开始日期"); Object.assign(task, op.changes); touch(task); break; }
+    case "edit": { const task = find(op.id); if(op.changes.habit && JSON.stringify(op.changes.habit.checks)!==JSON.stringify(task.habit?.checks)) throw new Error("请通过打卡按钮修改记录"); if(task.kind === "habit" && task.habit?.checks.length && op.changes.plannedDate && op.changes.plannedDate!==task.plannedDate) throw new Error("已有打卡的习惯不能修改开始日期"); Object.assign(task, op.changes); touch(task);
+      if (task.kind === "goal" && op.changes.dueDate) {
+        const children = new Map<string, Task[]>();
+        for (const child of next) {
+          if (child.parentId && (child.kind === "goal" || child.kind === "step")) {
+            const siblings = children.get(child.parentId) ?? [];
+            siblings.push(child); children.set(child.parentId, siblings);
+          }
+        }
+        const projects = [task], visited = new Set<string>();
+        for (let i = 0; i < projects.length; i++) {
+          const parent = projects[i];
+          if (visited.has(parent.id) || !parent.dueDate) continue;
+          visited.add(parent.id);
+          for (const child of children.get(parent.id) ?? []) {
+            if (!child.dueDate || child.dueDate > parent.dueDate) {
+              child.dueDate = parent.dueDate; touch(child);
+            }
+            if (child.kind === "goal") projects.push(child);
+          }
+        }
+      }
+      break;
+    }
     case "habitCheck": {
       const task=find(op.id); const date=beijingDate(new Date(now));
       if(task.kind!=="habit" || !task.habit || !task.plannedDate || op.date<task.plannedDate || op.date>habitDate(task.plannedDate,20) || op.date>date) throw new Error("只能为计划内已到来的日期打卡");
