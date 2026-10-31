@@ -3633,3 +3633,13 @@ h1,h2,h3 {
 .projects-list .project-card>summary:hover .project-drag-handle,.projects-list .project-drag-handle:focus-visible {
   opacity: 1
 }}
+
+/* Daily page review: keep changes scoped until this page is approved. */
+.view-daily .daily-completed .check-button.checked {
+  background: #98a4b6;
+  border-color: #98a4b6;
+}
+@media(min-width:851px) {
+  .content.view-daily>.work-status { top: 47px; }
+  .view-daily .week-strip>button { height: 84px; min-height: 84px; display: flex; flex-direction: column; justify-content: center; gap: 0; }
+}
