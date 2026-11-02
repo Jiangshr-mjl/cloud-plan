@@ -3741,3 +3741,21 @@ h1,h2,h3 {
  .goal-mode-list .completed-subtasks[open]:before { left: 8px; }
  .goal-mode-list .completed-subtasks>.task-row:before { left: -16px; width: 10px; }
 }
+
+/* Quadrants, first page review: toolbar composition and readable hierarchy. */
+.goal-mode-quadrants .goal-view-switch { border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+.goal-mode-quadrants .goal-view-switch button>svg { display: none; }
+.goal-mode-quadrants .goal-view-switch button { border-right: 1px solid var(--line); }
+.goal-mode-quadrants .goal-view-switch button:last-child { border-right: 0; }
+.goal-mode-quadrants .board-axes { font-size: 14px; }
+@media(min-width:851px) { .goal-mode-quadrants .matrix-task-name { align-items: flex-start; text-align: left; } }
+@media(min-width:851px) {
+ .goal-mode-quadrants>.page-heading { margin-bottom: 8px; }
+ .goal-mode-quadrants .quadrant-filter { margin-bottom: 16px; }
+ .goal-mode-quadrants .quadrant-heading h2 { font-size: 22px; }
+ .goal-mode-quadrants .quadrant-heading>span { font-size: 16px; }
+ .goal-mode-quadrants .quadrant-dot { width: 13px; height: 13px; }
+ .goal-mode-quadrants .bubble-task-count { font-size: 14px; }
+ .goal-mode-quadrants .matrix-task-name small { font-size: 16px; }
+ .goal-mode-quadrants .matrix-task-name small>svg { width: 17px; height: 17px; }
+}
