@@ -3872,3 +3872,27 @@ h1,h2,h3 {
  .view-settings .settings-card>.secondary { margin-top: 8px; }
  .view-settings .settings-card dt,.view-settings .settings-card dd { font-size: 17px; }
 }
+
+/* Welcome review: match the approved hero and static task proportions. */
+.welcome .demo-check { flex-shrink: 0; }
+.welcome-demo>div:last-child .demo-task-copy i { background: #8d9ab0; }
+@media(min-width:1201px) {
+  .welcome { padding-inline: 9.1vw; gap: 42px; }
+  .welcome h1 { font-size: clamp(76px,5.55vw,88px); line-height: 1.24; font-weight: 800; }
+  .welcome-copy>.welcome-intro { font-size: 24px; margin: 10px 0 30px; }
+  .welcome-demo { padding: 18px 25px; }
+  .welcome-demo header { font-size: 18px; font-weight: 600; }
+  .welcome-demo header span { font-size: 15px; font-weight: 400; }
+  .welcome-demo>div { min-height: 86px; gap: 24px; }
+  .welcome .demo-check { width: 30px; height: 30px; border-color: #879bb8; }
+  .welcome .demo-check.done { border-color: var(--green); }
+  .welcome-demo time { font-size: 16px; margin-right: 18px; }
+  .welcome-demo>div>svg { color: var(--muted); }
+  .unlock-card { min-height: 584px; }
+  .unlock-card h2 { font-size: 40px; }
+  .unlock-card>p { font-size: 18px; margin-bottom: 24px; }
+  .unlock-card>label { margin-top: 12px; }
+  .unlock-card input { min-height: 62px; font-size: 18px; }
+  .unlock-card>.primary { min-height: 62px; margin-top: 30px; font-size: 22px; gap: 14px; }
+  .unlock-card>.unlock-note { margin: 36px 0 0; padding-top: 26px; }
+}
