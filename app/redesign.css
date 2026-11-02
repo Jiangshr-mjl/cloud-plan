@@ -2112,10 +2112,10 @@ h1,h2,h3 {
 }
 
 /* Card details preserve real dates and actions without competing with the primary content. */
-.view-habits>.work-status .work-timer,.view-settings>.work-status .work-timer {
+.view-habits>.work-status-anchor>.work-status .work-timer,.view-settings>.work-status-anchor>.work-status .work-timer {
   display: none
 }
-.view-habits>.work-status:not(:has(.work-timer-error)),.view-settings>.work-status:not(:has(.work-timer-error)) {
+.view-habits>.work-status-anchor>.work-status:not(:has(.work-timer-error)),.view-settings>.work-status-anchor>.work-status:not(:has(.work-timer-error)) {
   display: none
 }
 .habit-symbol {
@@ -2590,7 +2590,7 @@ h1,h2,h3 {
 .unlock-arrow {
   order: 2
 }
-.goal-mode-timeline>.work-status .work-timer,.goal-mode-quadrants>.work-status .work-timer {
+.goal-mode-timeline>.work-status-anchor>.work-status .work-timer,.goal-mode-quadrants>.work-status-anchor>.work-status .work-timer {
   display: none
 }
 .goal-mode-timeline .goal-view-toolbar {
@@ -2840,7 +2840,7 @@ h1,h2,h3 {
   padding-top: 24px;
   padding: 24px 24px 40px
 }
-.content>.work-status {
+.content>.work-status-anchor>.work-status {
   top: 30px
 }
 .records-panel {
@@ -3585,19 +3585,19 @@ h1,h2,h3 {
 }}
 
 @media(min-width:851px){
-.content>.work-status {
+.content>.work-status-anchor>.work-status {
   position: absolute;
   margin: 0;
   max-width: 420px;
   z-index: 2;
-  right: calc(clamp(32px,5.65vw,90px) + 170px);
-  top: 34px
+  right: 170px;
+  top: 2px
 }
-.content.view-history>.work-status {
-  left: calc(clamp(32px,5.65vw,90px) + 185px);
+.content.view-history>.work-status-anchor>.work-status {
+  left: 185px;
   right: auto
 }
-.content.view-settings>.work-status {
+.content.view-settings>.work-status-anchor>.work-status {
   right: 64px
 }
 .page-heading {
@@ -3646,7 +3646,7 @@ h1,h2,h3 {
   border-color: #98a4b6;
 }
 @media(min-width:851px) {
-  .content.view-daily>.work-status { top: 47px; }
+  .content.view-daily>.work-status-anchor>.work-status { top: 15px; }
   .view-daily .week-strip>button { height: 96px; min-height: 96px; width: calc(100% - 16px); justify-self: center; display: flex; flex-direction: column; justify-content: center; gap: 2px; }
 }
 
@@ -3902,4 +3902,9 @@ h1,h2,h3 {
   .unlock-card input { min-height: 62px; font-size: 18px; }
   .unlock-card>.primary { min-height: 62px; margin-top: 30px; font-size: 22px; gap: 14px; }
   .unlock-card>.unlock-note { margin: 36px 0 0; padding-top: 26px; }
+}
+
+/* Keep timer offsets local to the flow position below notices. */
+@media(min-width:851px) {
+ .content>.work-status-anchor { position: relative; height: 0; }
 }
