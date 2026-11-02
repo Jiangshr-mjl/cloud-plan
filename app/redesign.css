@@ -3669,3 +3669,15 @@ h1,h2,h3 {
 /* Keep focus indicated by star and tint without changing text weight. */
 .view-daily .task-row.is-focus .task-title { font-weight: 600; }
 .view-daily .daily-completed .task-title { font-weight: 400; }
+
+/* Project list: page-by-page review, scoped away from approved daily UI. */
+.goal-mode-list .task-title { font-size: 16px; font-weight: 600; }
+.goal-mode-list .task-row.is-focus .task-title { font-weight: 600; }
+.goal-mode-list .project-table-heading { font-weight: 600; }
+.goal-mode-list .project-table-heading>span:last-child { text-align: left; padding-left: 12px; }
+@media(min-width:851px) {
+ .goal-mode-list>.page-heading { margin-bottom: 8px; }
+ .goal-mode-list .projects-list>.project-card>.project-content { padding-left: 56px; }
+ .goal-mode-list .projects-list .task-row { min-height: 52px; }
+ .goal-mode-list .project-card>summary strong { font-size: 18px; }
+}
