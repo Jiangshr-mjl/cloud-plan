@@ -3698,3 +3698,13 @@ h1,h2,h3 {
  .goal-mode-list .project-content>.task-row:before { content: ""; position: absolute; left: -28px; top: 0; width: 16px; height: 27px; border-left: 1px solid var(--line); border-bottom: 1px solid var(--line); border-bottom-left-radius: 7px; pointer-events: none; }
  .goal-mode-list .projects-list .task-row>.task-main { gap: 10px; }
 }
+
+/* Sibling projects and tasks share one icon/title origin. Chevron and drag live in the gutter. */
+.goal-mode-list .project-content>.project-card { padding-left: 0; border-left: 0; }
+.goal-mode-list .project-content>.project-card>summary { position: relative; }
+.goal-mode-list .project-content>.project-card>summary>.project-chevron { position: absolute; left: -28px; top: 18px; }
+.goal-mode-list .project-content>.project-card>summary>.lucide-folder { width: 24px; height: 24px; }
+.goal-mode-list .project-content>.project-card>summary>.project-drag-handle { left: -60px; }
+@media(min-width:851px) {
+ .goal-mode-list .project-content>.project-card>.project-content { padding-left: 48px; }
+}
