@@ -3681,3 +3681,20 @@ h1,h2,h3 {
  .goal-mode-list .projects-list .task-row { min-height: 52px; }
  .goal-mode-list .project-card>summary strong { font-size: 18px; }
 }
+
+/* Project list detail pass: status belongs with the task, actions retain their column. */
+.goal-mode-list .project-scheduled-badge { display: inline-flex; align-items: center; gap: 6px; border-radius: 5px; background: var(--sky); color: var(--green); font-size: 13px; font-weight: 500; padding: 4px 8px; white-space: nowrap; }
+.goal-mode-list .task-main:has(.project-scheduled-badge) { flex-direction: row; align-items: center; flex-wrap: wrap; gap: 10px; }
+.goal-mode-list .task-row:has(.project-scheduled-badge)>.schedule-step { visibility: hidden; }
+.goal-mode-list .project-completion-percent,.goal-mode-list .due { color: #466187; }
+@media(min-width:1201px) {
+ .goal-mode-list .project-table-heading { grid-template-columns: minmax(0,1fr) 210px 130px 170px; }
+ .goal-mode-list .projects-list .project-completion,.goal-mode-list .row-progress { width: 210px; }
+ .goal-mode-list .projects-list .project-card>summary { padding-right: 182px; }
+ .goal-mode-list .projects-list .task-row>.schedule-step { width: 126px; font-size: 13px; }
+ .goal-mode-list .projects-list .project-progress { width: 100px; }
+}
+@media(min-width:851px) {
+ .goal-mode-list .project-content>.task-row:before { content: ""; position: absolute; left: -28px; top: 0; width: 16px; height: 27px; border-left: 1px solid var(--line); border-bottom: 1px solid var(--line); border-bottom-left-radius: 7px; pointer-events: none; }
+ .goal-mode-list .projects-list .task-row>.task-main { gap: 10px; }
+}
