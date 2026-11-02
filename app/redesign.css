@@ -2268,13 +2268,13 @@ h1,h2,h3 {
 .chart-frame>.chart-scroll {
   flex: 1;
   min-width: 0;
-  padding-top: 8px
+  padding-top: 32px
 }
 .chart-scale {
   width: 28px;
   flex-shrink: 0;
   height: 174px;
-  margin-top: 8px;
+  margin-top: 32px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -2597,7 +2597,7 @@ h1,h2,h3 {
   background: transparent;
   border: 0;
   padding: 0;
-  margin-bottom: 0
+  margin-bottom: 20px
 }
 .goal-mode-quadrants .goal-view-toolbar {
   background: transparent;
@@ -3647,7 +3647,7 @@ h1,h2,h3 {
 }
 @media(min-width:851px) {
   .content.view-daily>.work-status { top: 47px; }
-  .view-daily .week-strip>button { height: 84px; min-height: 84px; display: flex; flex-direction: column; justify-content: center; gap: 0; }
+  .view-daily .week-strip>button { height: 96px; min-height: 96px; width: calc(100% - 16px); justify-self: center; display: flex; flex-direction: column; justify-content: center; gap: 2px; }
 }
 
 /* Daily composition and type refinement, local review round 2. */
