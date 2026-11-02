@@ -58,3 +58,4 @@ next-env.d.ts
 /tests/output/
 *.tsbuildinfo
 /.npm-cache/
+/public/ui-review-preview/
