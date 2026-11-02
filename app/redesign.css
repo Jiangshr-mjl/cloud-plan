@@ -3908,3 +3908,7 @@ h1,h2,h3 {
 @media(min-width:851px) {
  .content>.work-status-anchor { position: relative; height: 0; }
 }
+/* Project header controls share the 64px heading row center. */
+@media(min-width:851px) {
+ .goal-mode-list>.work-status-anchor>.work-status { top: 32px; transform: translateY(-50%); }
+}
