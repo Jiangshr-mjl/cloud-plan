@@ -3772,3 +3772,15 @@ h1,h2,h3 {
 /* Symmetric heading space keeps the simulation ellipse centered in its visible parent. */
 .goal-mode-quadrants .priority-matrix .bubble-arena>.project-bubble { display: grid; grid-template-rows: 1fr auto 1fr; padding-bottom: 10px; }
 .goal-mode-quadrants .project-bubble:after { content: ""; pointer-events: none; }
+
+/* Concept proportion pass: compact desktop headings without squeezing mobile controls. */
+@media(min-width:851px) {
+ .goal-mode-quadrants .project-bubble-heading { width: 60%; min-height: 32px; gap: 8px; }
+ .goal-mode-quadrants .bubble-project-menu { width: 32px; height: 32px; }
+ .goal-mode-quadrants .project-bubble-title { font-size: 17px; gap: 8px; }
+ .goal-mode-quadrants .priority-matrix .quadrant-grid { padding-top: 16px; padding-bottom: 16px; }
+ .goal-mode-quadrants .goal-view-switch button { min-width: 120px; }
+ .goal-mode-quadrants .priority-matrix .project-bubble .project-bubble { background: #f0f7ff; }
+ .goal-mode-quadrants .priority-matrix .bubble-arena>.project-bubble { border-color: #a8caff; background: #f3f9ff; }
+ .goal-mode-quadrants .matrix-task-name { font-size: 17px; line-height: 1.45; }
+}

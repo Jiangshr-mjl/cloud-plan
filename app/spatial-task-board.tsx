@@ -53,10 +53,10 @@ function BubbleArena({children}: {children: ReactNode}) {
         y+=h+gap;
       }
       const contentHeight=Math.max(0,y-gap);
-      height=contentHeight+(nested?(bodies.length>1?48:24):(bodies.length>1?64:40));
+      height=contentHeight+(nested?(bodies.length>1?48:8):(bodies.length>1?64:24));
       if(nested)for(const b of bodies)for(const [px,py] of outline(b)){
         const nx=(px-width/2)/(width/2);
-        height=Math.max(height,2*Math.abs(py-contentHeight/2)/Math.sqrt(Math.max(.01,1-nx*nx))+24);
+        height=Math.max(height,2*Math.abs(py-contentHeight/2)/Math.sqrt(Math.max(.01,1-nx*nx))+(bodies.length>1?24:8));
       }
       height=Math.max(80,height);
       for(const b of bodies)b.y+=(height-contentHeight)/2;
