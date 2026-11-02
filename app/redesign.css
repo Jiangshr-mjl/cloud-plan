@@ -3682,7 +3682,7 @@ h1,h2,h3 {
 .goal-mode-list .project-table-heading { font-weight: 600; }
 .goal-mode-list .project-table-heading>span:last-child { text-align: left; padding-left: 12px; }
 @media(min-width:851px) {
- .goal-mode-list>.page-heading { margin-bottom: 16px; }
+ .goal-mode-list .project-heading-group>.page-heading { margin-bottom: 16px; }
  .goal-mode-list .projects-list>.project-card>.project-content { padding-left: 56px; }
  .goal-mode-list .projects-list .task-row { min-height: 60px; }
  .goal-mode-list .project-card>summary strong { font-size: 18px; }
@@ -3756,7 +3756,7 @@ h1,h2,h3 {
 .goal-mode-quadrants .board-axes { font-size: 14px; }
 @media(min-width:851px) { .goal-mode-quadrants .matrix-task-name { align-items: flex-start; text-align: left; } }
 @media(min-width:851px) {
- .goal-mode-quadrants>.page-heading { margin-bottom: 16px; }
+ .goal-mode-quadrants .project-heading-group>.page-heading { margin-bottom: 16px; }
  .goal-mode-quadrants .quadrant-filter { margin-bottom: 16px; }
  .goal-mode-quadrants .quadrant-heading h2 { font-size: 22px; }
  .goal-mode-quadrants .quadrant-heading>span { font-size: 16px; }
@@ -3797,8 +3797,9 @@ h1,h2,h3 {
 .goal-mode-timeline .timeline-weekday { font-size: 14px; }
 .goal-mode-timeline .timeline-kind { font-size: 13px; }
 @media(min-width:851px) {
- .goal-mode-timeline>.page-heading { margin-bottom: 16px; }
- .goal-mode-timeline .project-schedule { position: absolute; top: 34px; right: calc(clamp(32px,5.65vw,90px) + 170px); }
+ .goal-mode-timeline .project-heading-group>.page-heading { margin-bottom: 16px; }
+ .goal-mode-timeline .project-heading-group { position: relative; }
+ .goal-mode-timeline .project-schedule { position: absolute; top: 2px; right: 170px; }
  .goal-mode-timeline .goal-view-toolbar { background: transparent; }
  .goal-mode-timeline .timeline-group { grid-template-columns: 112px minmax(0,1fr); }
  .goal-mode-timeline .timeline-items { padding-left: 68px; }
