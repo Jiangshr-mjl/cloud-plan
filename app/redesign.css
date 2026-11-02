@@ -3726,3 +3726,18 @@ h1,h2,h3 {
  .goal-mode-list .project-content>.project-card>summary>.lucide-folder { margin-right: 12px; }
  .goal-mode-list .project-content>.project-card>summary>.project-chevron { background: #fff; }
 }
+
+/* Completed groups own their child indentation; the chevron stays in the gutter. */
+.goal-mode-list .completed-subtasks { position: relative; --completed-indent: 48px; }
+.goal-mode-list .completed-subtasks>summary { position: relative; gap: 24px; }
+.goal-mode-list .completed-subtasks>summary>.lucide-chevron-right { position: absolute; left: -28px; background: #fff; }
+.goal-mode-list .completed-subtasks>.task-row { margin-left: var(--completed-indent); }
+.goal-mode-list .completed-subtasks[open]:before { content: ""; position: absolute; left: calc(var(--completed-indent) - 28px); top: 52px; bottom: 34px; border-left: 1px solid var(--line); pointer-events: none; }
+.goal-mode-list .completed-subtasks>.task-row:before { content: ""; position: absolute; left: -28px; top: 50%; width: 16px; border-top: 1px solid var(--line); pointer-events: none; }
+@media(max-width:850px) {
+ .goal-mode-list .completed-subtasks { --completed-indent: 24px; }
+ .goal-mode-list .completed-subtasks>summary { gap: 12px; }
+ .goal-mode-list .completed-subtasks>summary>.lucide-chevron-right { left: -18px; }
+ .goal-mode-list .completed-subtasks[open]:before { left: 8px; }
+ .goal-mode-list .completed-subtasks>.task-row:before { left: -16px; width: 10px; }
+}
