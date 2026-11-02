@@ -3652,7 +3652,7 @@ h1,h2,h3 {
 @media(min-width:851px) {
   .view-daily>.page-heading { margin-bottom: 15px; }
   .view-daily .calendar-heading .icon-button,.view-daily .calendar-heading .week-today { min-height: 32px; height: 32px; }
-  .view-daily .daily-workspace { grid-template-columns: minmax(0,1.78fr) minmax(300px,1fr); gap: 0 28px; }
+  .view-daily .daily-workspace { grid-template-columns: minmax(0,1.75fr) minmax(300px,1fr); gap: 0 30px; }
   .view-daily .daily-layout .task-row { min-height: 64px; gap: 24px; padding-block: 10px; }
   .view-daily .daily-layout .list-heading { padding-bottom: 8px; }
   .view-daily .daily-progress { margin-bottom: 14px; }
@@ -3660,6 +3660,12 @@ h1,h2,h3 {
 
 @media(min-width:851px) {
  .view-daily .week-calendar { margin-bottom: 24px; }
- .view-daily .week-heading { height: 36px; min-height: 36px; padding-bottom: 8px; }
+ .view-daily .week-heading,.view-daily .daily-layout .list-heading { height: 40px; min-height: 40px; padding: 0 0 8px; align-items: flex-start; }
+ .view-daily .list-heading h2,.view-daily .week-heading h2 { margin: 0; line-height: 32px; }
+ .view-daily .week-plan { padding-left: 32px; }
  .view-daily .week-heading .icon-button { min-height: 32px; height: 32px; }
 }
+
+/* Keep focus indicated by star and tint without changing text weight. */
+.view-daily .task-row.is-focus .task-title { font-weight: 600; }
+.view-daily .daily-completed .task-title { font-weight: 400; }
