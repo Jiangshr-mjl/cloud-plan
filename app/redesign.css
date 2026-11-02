@@ -3812,3 +3812,18 @@ h1,h2,h3 {
  .goal-mode-timeline .project-settings>summary { position: absolute; right: 0; top: 12px; }
  .goal-mode-timeline .project-settings[open] { padding: 12px 0; }
 }
+
+/* Timeline deadlines use the same type scale and right-anchored column at every depth. */
+.goal-mode-timeline .project-timeline .row-deadline .due,.goal-mode-timeline .project-timeline .project-deadline .due { display: inline-flex; align-items: center; gap: 8px; padding: 0; font-family: inherit; font-size: 17px; font-weight: 500; line-height: 24px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.goal-mode-timeline .project-timeline .due>svg { width: 19px; height: 19px; }
+@media(min-width:851px) {
+ .goal-mode-timeline { --timeline-deadline-width: clamp(130px,calc(100vw - 1140px),300px); }
+ .goal-mode-timeline .project-timeline .row-deadline,.goal-mode-timeline .project-timeline .project-deadline { width: var(--timeline-deadline-width); padding: 0; margin-left: 0; }
+ .goal-mode-timeline .project-card>summary { grid-template-columns: 25px minmax(0,1fr) var(--timeline-deadline-width); padding-right: 218px; }
+ .goal-mode-timeline .task-row>.task-options { width: 44px; flex-shrink: 0; }
+ .goal-mode-timeline .task-row>.schedule-step { width: 150px; flex-shrink: 0; }
+}
+@media(max-width:850px) {
+ .goal-mode-timeline .project-timeline .row-deadline .due,.goal-mode-timeline .project-timeline .project-deadline .due { font-size: 14px; line-height: 22px; }
+ .goal-mode-timeline .project-timeline .due>svg { width: 16px; height: 16px; }
+}
