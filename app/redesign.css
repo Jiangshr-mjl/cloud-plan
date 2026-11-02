@@ -3857,3 +3857,18 @@ h1,h2,h3 {
  .view-history .chart-frame { margin-top: 18px; }
  .view-history .work-days { margin-top: 12px; padding-top: 10px; }
 }
+
+/* Settings review: shared column alignment and balanced section controls. */
+.view-settings .settings-label p { font-size: 17px; }
+.view-settings .settings-card>.backup-buttons .secondary { min-height: 54px; }
+@media(min-width:1201px) {
+ .content.view-settings { padding-top: 46px; }
+ .view-settings .settings-card { grid-template-columns: 68px minmax(0,calc(33.6% - 68px)) minmax(0,1fr) 160px; }
+ .view-settings .settings-card:before { left: 33.6%; }
+ .view-settings .settings-symbol,.view-settings .settings-label { margin-top: 16px; }
+ .view-settings .settings-card>.backup-buttons { margin-top: 12px; gap: 18px; }
+ .view-settings .backup-buttons .secondary:first-child { min-width: 185px; }
+ .view-settings .backup-buttons .secondary:nth-child(2) { min-width: 240px; }
+ .view-settings .settings-card>.secondary { margin-top: 8px; }
+ .view-settings .settings-card dt,.view-settings .settings-card dd { font-size: 17px; }
+}
