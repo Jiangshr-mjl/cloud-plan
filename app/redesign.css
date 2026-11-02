@@ -3784,3 +3784,31 @@ h1,h2,h3 {
  .goal-mode-quadrants .priority-matrix .bubble-arena>.project-bubble { border-color: #a8caff; background: #f3f9ff; }
  .goal-mode-quadrants .matrix-task-name { font-size: 17px; line-height: 1.45; }
 }
+
+/* Timeline page review: date rail, heading actions and project rows. */
+.goal-mode-timeline .task-title { font-size: 17px; font-weight: 600; }
+.goal-mode-timeline .check-button { margin-top: 0; }
+.goal-mode-timeline .timeline-weekday { font-size: 14px; }
+.goal-mode-timeline .timeline-kind { font-size: 13px; }
+@media(min-width:851px) {
+ .goal-mode-timeline>.page-heading { margin-bottom: 8px; }
+ .goal-mode-timeline .project-schedule { position: absolute; top: 34px; right: calc(clamp(32px,5.65vw,90px) + 170px); }
+ .goal-mode-timeline .goal-view-toolbar { background: transparent; }
+ .goal-mode-timeline .timeline-group { grid-template-columns: 112px minmax(0,1fr); }
+ .goal-mode-timeline .timeline-items { padding-left: 68px; }
+ .goal-mode-timeline .timeline-entry:before { left: -75px; }
+ .goal-mode-timeline .timeline-entry>.timeline-kind { left: -176px; }
+ .goal-mode-timeline .task-row>.check-button { margin-right: 16px; }
+ .goal-mode-timeline .project-card { position: relative; }
+ .goal-mode-timeline .project-card>summary { display: grid; grid-template-columns: 25px minmax(0,1fr) 150px; gap: 6px 28px; padding-right: 44px; }
+ .goal-mode-timeline .project-card>summary>.project-chevron { position: absolute; left: -28px; top: 23px; }
+ .goal-mode-timeline .project-card>summary>.lucide-folder { grid-column: 1; grid-row: 1; }
+ .goal-mode-timeline .project-card>summary>strong { grid-column: 2; grid-row: 1; font-size: 19px; }
+ .goal-mode-timeline .project-completion { grid-column: 2; grid-row: 2; width: auto; }
+ .goal-mode-timeline .project-deadline { grid-column: 3; grid-row: 1; }
+ .goal-mode-timeline .project-content { position: static; padding-left: 48px; }
+ .goal-mode-timeline .project-actions { min-height: 0; padding: 0; }
+ .goal-mode-timeline .project-settings { position: static; }
+ .goal-mode-timeline .project-settings>summary { position: absolute; right: 0; top: 12px; }
+ .goal-mode-timeline .project-settings[open] { padding: 12px 0; }
+}
