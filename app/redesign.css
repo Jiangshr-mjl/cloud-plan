@@ -3827,3 +3827,17 @@ h1,h2,h3 {
  .goal-mode-timeline .project-timeline .row-deadline .due,.goal-mode-timeline .project-timeline .project-deadline .due { font-size: 14px; line-height: 22px; }
  .goal-mode-timeline .project-timeline .due>svg { width: 16px; height: 16px; }
 }
+
+/* Habit page review: align card rhythm with the approved 21-day layout. */
+.view-habits .habit-actions>.primary:disabled>svg { background: var(--green); color: #fff; border-radius: 50%; padding: 3px; width: 24px; height: 24px; }
+.view-habits .habit-actions>.primary>svg { stroke-width: 3; }
+@media(min-width:851px) {
+ .view-habits>.page-heading { margin-bottom: 16px; }
+ .view-habits .habit-notifications { padding-block: 11px; }
+ .view-habits .habit-meta { margin-bottom: 4px; }
+ .view-habits .habit-progress { line-height: 1.2; }
+ .view-habits .habit-progress>span:first-child { line-height: 1.2; }
+ .view-habits .habit-meta>svg { width: 18px; height: 18px; }
+ .view-habits .habit-days small { font-size: 12px; }
+ .view-habits .habit-actions>.text-button { font-size: 15px; }
+}
