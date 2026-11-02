@@ -3954,3 +3954,11 @@ h1,h2,h3 {
 .week-focus .task-row>.row-deadline{grid-column:2;grid-row:2;width:auto;justify-self:start;padding:0}
 .week-focus .task-row>.row-deadline:empty{display:none}
 .week-focus .project-content .task-row .task-meta:empty{display:none}
+/* Expanded settings participate in layout so they cannot cover weekly tasks. */
+.week-focus .project-content>.project-actions:has(>.project-settings[open]){position:static;width:100%;margin:0 0 12px;min-width:0}
+.week-focus .project-settings[open]{box-sizing:border-box;min-width:0}
+.week-focus .project-settings-actions{min-width:0}
+.week-focus .project-settings-actions>button{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.week-focus .project-parent-picker{width:100%;min-width:0}
+.week-focus .project-parent-picker select{width:100%;max-width:100%;min-width:0}
+.week-focus .project-content:has(>.project-actions>.project-settings[open])>.weekly-quick-add{margin-right:0}

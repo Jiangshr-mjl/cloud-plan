@@ -27,6 +27,17 @@ try{for(const width of [1360,390,320]){
  assert.equal(state.tasks.find(t=>t.title==='复现计算流程').dueDate,root.dueDate);
  assert.equal(state.tasks.find(t=>t.title==='整理阅读笔记').parentId,weekly.id);
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+ const settings=page.getByLabel(`项目设置：${root.title}`,{exact:true});
+ await settings.click();
+ const panel=page.locator('.week-focus .project-settings[open]');
+ const panelBox=await panel.boundingBox();
+ const formBox=await input.boundingBox();
+ const taskBox=await page.getByRole('button',{name:`编辑：${child.title}`,exact:true}).boundingBox();
+ assert.ok(panelBox.y+panelBox.height<=formBox.y,'settings reserve their own space above quick entry');
+ assert.ok(panelBox.y+panelBox.height<=taskBox.y,'settings do not overlap subtasks');
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+ await page.locator('.week-focus').screenshot({path:`tests/output/weekly-ui/${width}-settings.png`});
+ await settings.click();
  await page.locator('.week-focus').screenshot({path:`tests/output/weekly-ui/${width}.png`});
  console.log(width,'inline creation, repeat entry, deadline, parent labels and overflow passed');await page.close();
 }}finally{await browser.close();}
