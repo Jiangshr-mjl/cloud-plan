@@ -1826,7 +1826,14 @@ h1,h2,h3 {
   gap: 2px
 }
 .week-strip>button:not(:first-child) {
-  border-left: 1px solid var(--line)
+  border-left-color: transparent
+}
+/* Separators belong to the seven-column grid, not rounded day buttons. */
+.week-strip {
+  background-image: linear-gradient(var(--line),var(--line)),linear-gradient(var(--line),var(--line)),linear-gradient(var(--line),var(--line)),linear-gradient(var(--line),var(--line)),linear-gradient(var(--line),var(--line)),linear-gradient(var(--line),var(--line));
+  background-size: 1px calc(100% - 32px);
+  background-position: 14.285714% center,28.571429% center,42.857143% center,57.142857% center,71.428571% center,85.714286% center;
+  background-repeat: no-repeat;
 }
 .daily-layout>.task-card {
   border: 0;
