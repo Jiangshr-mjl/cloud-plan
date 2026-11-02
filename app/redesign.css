@@ -1697,6 +1697,11 @@ h1,h2,h3 {
   margin-top: 20px
 }
 .lock-symbol {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
   background: var(--sky);
   color: var(--green);
   margin: 0 auto 20px;
