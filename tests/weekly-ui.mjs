@@ -1,0 +1,32 @@
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {mkdir} from 'node:fs/promises';
+import {chromium} from 'playwright';
+import {applyOperation,beijingDate,weekStart} from '../lib/planner.ts';
+await mkdir('tests/output/weekly-ui',{recursive:true});
+const browser=await chromium.launch({channel:'msedge'});
+try{for(const width of [1360,390,320]){
+ const page=await browser.newPage({viewport:{width,height:1000}}),now=new Date().toISOString();
+ const root={id:randomUUID(),kind:'goal',parentId:null,title:'开发垂直速度反演V0算法',notes:'',plannedDate:null,weekDate:weekStart(beijingDate()),dueDate:'2026-12-20',important:true,urgent:false,order:0,completedAt:null,createdAt:now,updatedAt:now,version:0};
+ const weekly={...root,id:randomUUID(),kind:'weekly',title:'本周阅读',weekDate:null,plannedDate:weekStart(beijingDate()),dueDate:null};
+ const child={...root,id:randomUUID(),kind:'step',parentId:root.id,title:'阅读学习Radenz算法',weekDate:null};
+ let state={revision:0,tasks:[root,weekly,child]};
+ await page.route('**/api/planner',async r=>{if(r.request().method()==='POST')state={revision:state.revision+1,tasks:applyOperation(state.tasks,r.request().postDataJSON().operation,state.revision+1)};await r.fulfill({json:state});});
+ await page.addInitScript(()=>localStorage.setItem('daylight.access-key','weekly-ui-test-key-000000000000000'));
+ await page.goto('http://127.0.0.1:5173');
+ await page.locator('.week-focus .project-card>summary').click();
+ const input=page.getByRole('textbox',{name:`添加子任务：${root.title}`,exact:true});
+ for(const title of ['复现计算流程','检查误差']){await input.fill(title);await input.press('Enter');await page.getByRole('button',{name:`编辑：${title}`,exact:true}).waitFor();assert.equal(await input.inputValue(),'');}
+ const winput=page.getByRole('textbox',{name:'添加子任务：本周阅读',exact:true});
+ await winput.fill('整理阅读笔记');await page.getByRole('button',{name:'确认添加子任务：本周阅读'}).click();
+ await page.getByRole('button',{name:'编辑：整理阅读笔记',exact:true}).waitFor();
+ assert.equal(await page.locator('.week-focus .task-meta').filter({hasText:root.title}).count(),0);
+ await page.locator('.sync-status').click();
+ await page.waitForFunction(()=>document.querySelector('.sync-status')?.textContent?.includes('已同步'));
+ assert.equal(state.tasks.filter(t=>t.parentId===root.id).length,3);
+ assert.equal(state.tasks.find(t=>t.title==='复现计算流程').dueDate,root.dueDate);
+ assert.equal(state.tasks.find(t=>t.title==='整理阅读笔记').parentId,weekly.id);
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+ await page.locator('.week-focus').screenshot({path:`tests/output/weekly-ui/${width}.png`});
+ console.log(width,'inline creation, repeat entry, deadline, parent labels and overflow passed');await page.close();
+}}finally{await browser.close();}

@@ -3919,3 +3919,38 @@ h1,h2,h3 {
 @media(min-width:851px) {
  .goal-mode-list>.work-status-anchor>.work-status { top: 32px; transform: translateY(-50%); }
 }
+
+/* Weekly focus: a clear parent heading and a compact, directly editable task list. */
+.week-focus .project-card>summary strong,.week-focus .weekly-goal>.task-row .task-title{font-size:18px;font-weight:700;line-height:1.5}
+.week-focus .project-card>summary{padding:18px 12px 12px;gap:8px}
+.week-focus .project-content{padding:0 12px 16px 24px}
+.week-focus .project-content>.task-row,.week-focus .weekly-subtasks>.task-row{padding:12px 0;gap:8px;grid-template-columns:28px minmax(0,1fr) auto}
+.week-focus .project-content .task-title,.week-focus .weekly-subtasks .task-title{font-size:15px;font-weight:500;line-height:1.55}
+.week-focus .task-main{min-width:0;width:auto}
+.week-focus .task-main .task-title{overflow-wrap:anywhere}
+.week-focus .project-content .check-button,.week-focus .weekly-subtasks .check-button{width:24px;height:24px;margin-top:3px}
+.week-focus .project-content .task-meta,.week-focus .weekly-subtasks .task-meta{font-size:12px}
+.week-focus .subtask-priority{font-size:11px;margin-top:5px}
+.week-focus .project-content>.project-actions{float:right;min-height:0;padding:0;margin:0 0 4px 6px}
+.week-focus .weekly-subtasks{margin:0 14px 14px 26px;padding-left:12px}
+.week-focus .weekly-subtask-heading{padding:0 14px 4px 26px}
+.week-focus .weekly-goal>.weekly-quick-add{margin:8px 14px 8px 26px}
+.weekly-quick-add{display:flex;align-items:center;gap:6px;min-width:0;margin:8px 0 10px;clear:both;border-bottom:1px solid #c9dfee}
+.weekly-quick-add input{width:0;min-width:0;flex:1;min-height:44px;border:0;background:transparent;border-radius:4px;padding:8px 4px;font:inherit;font-size:14px;color:#17324d}
+.weekly-quick-add input::placeholder{color:#526b83}
+.weekly-quick-add button{display:flex;align-items:center;justify-content:center;gap:4px;min-height:44px;padding:8px;color:#2167b5;background:transparent;border:0;border-radius:6px;font-size:13px;white-space:nowrap}
+.weekly-quick-add button:hover:not(:disabled){background:#eaf5ff}
+.weekly-quick-add button:disabled{opacity:.45;cursor:default}
+.week-focus .project-completion{font-size:12px}
+.week-focus .project-completion-percent{font-size:13px}
+.view-daily .week-plan .project-card>summary>strong{font-size:18px;font-weight:700}
+.week-focus .project-content{position:relative}
+.week-focus .project-content>.project-actions{position:absolute;right:8px;top:8px;float:none;margin:0}
+.week-focus .project-content>.weekly-quick-add{margin-right:40px;clear:none}
+.week-focus .project-content .task-row,.week-focus .weekly-subtasks .task-row{display:grid;grid-template-columns:24px minmax(0,1fr) 36px;gap:4px 8px;align-items:start}
+.week-focus .project-content .task-row>.check-button,.week-focus .weekly-subtasks .task-row>.check-button{grid-column:1;grid-row:1}
+.week-focus .project-content .task-row>.task-main,.week-focus .weekly-subtasks .task-row>.task-main{grid-column:2;grid-row:1;padding:0}
+.week-focus .project-content .task-row>.task-options,.week-focus .weekly-subtasks .task-row>.task-options{grid-column:3;grid-row:1;align-self:start;width:36px}
+.week-focus .task-row>.row-deadline{grid-column:2;grid-row:2;width:auto;justify-self:start;padding:0}
+.week-focus .task-row>.row-deadline:empty{display:none}
+.week-focus .project-content .task-row .task-meta:empty{display:none}
