@@ -1131,8 +1131,8 @@ h1,h2,h3 {
   border-radius: 8px;
   padding: 0;
   box-shadow: 0 3px 12px #172b4d12;
-  background: color-mix(in srgb,var(--task-fill) 18%,white);
-  border: 1px solid color-mix(in srgb,var(--task-fill) 60%,white)
+  background: #fff;
+  border: 1px solid var(--line)
 }
 .priority-matrix .project-bubble .bubble-arena>.matrix-step {
   max-width: 76%
@@ -3759,3 +3759,16 @@ h1,h2,h3 {
  .goal-mode-quadrants .matrix-task-name small { font-size: 16px; }
  .goal-mode-quadrants .matrix-task-name small>svg { width: 17px; height: 17px; }
 }
+
+/* Keep the project menu in the centered heading instead of at the ellipse edge. */
+.goal-mode-quadrants .project-bubble-heading { width: 60%; margin-inline: auto; min-height: 44px; gap: 8px; }
+.goal-mode-quadrants .project-bubble-title { max-width: none; min-width: 0; flex: 1; }
+.goal-mode-quadrants .bubble-project-menu { position: static; width: 44px; height: 44px; }
+@media(max-width:850px) {
+ .goal-mode-quadrants .project-bubble-heading { width: 60%; gap: 4px; }
+ .goal-mode-quadrants .bubble-task-count { display: none; }
+}
+
+/* Symmetric heading space keeps the simulation ellipse centered in its visible parent. */
+.goal-mode-quadrants .priority-matrix .bubble-arena>.project-bubble { display: grid; grid-template-rows: 1fr auto 1fr; padding-bottom: 10px; }
+.goal-mode-quadrants .project-bubble:after { content: ""; pointer-events: none; }
