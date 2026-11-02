@@ -3841,3 +3841,19 @@ h1,h2,h3 {
  .view-habits .habit-days small { font-size: 12px; }
  .view-habits .habit-actions>.text-button { font-size: 15px; }
 }
+
+/* Work records page review: compact summary and readable date groups. */
+.view-history .work-summary section { gap: 6px; }
+.view-history .records-panel .history-group>summary.history-day { justify-content: flex-start; gap: 12px; min-height: 44px; padding: 10px 0; }
+.view-history .records-panel .history-day>h2 { flex: none; }
+.view-history .records-panel .history-day>span { margin-left: 0; font-size: 14px; }
+.view-history .records-panel .history-card { padding-inline: 8px; }
+.view-history .work-timer-toggle>svg { border: 1px solid #a8caff; border-radius: 50%; padding: 3px; width: 24px; height: 24px; }
+.view-history .chart-label,.view-history .chart-scale { font-size: 13px; }
+.view-history .chart-bar b { font-size: 13px; font-weight: 600; }
+@media(min-width:851px) {
+ .view-history>.page-heading { margin-bottom: 8px; }
+ .view-history .work-summary { padding-block: 8px; }
+ .view-history .chart-frame { margin-top: 18px; }
+ .view-history .work-days { margin-top: 12px; padding-top: 10px; }
+}
