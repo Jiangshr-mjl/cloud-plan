@@ -3708,3 +3708,21 @@ h1,h2,h3 {
 @media(min-width:851px) {
  .goal-mode-list .project-content>.project-card>.project-content { padding-left: 48px; }
 }
+
+/* Project tree: continuous expanded rails and aligned completion controls. */
+.goal-mode-list .check-button { margin-top: 0; align-self: center; }
+.goal-mode-list .check-button.checked,.goal-mode-list .completed-group-check { background: #98a4b6; border: 1px solid #98a4b6; color: #fff; }
+.goal-mode-list .completed-group-check { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; flex-shrink: 0; border-radius: 5px; }
+.goal-mode-list .is-done .task-title { color: #8795a9; font-weight: 400; }
+.goal-mode-list .completed-subtasks>summary { gap: 14px; font-size: 15px; }
+@media(min-width:851px) {
+ .goal-mode-list .project-card[open]>.project-content { position: relative; }
+ .goal-mode-list .project-card[open]>.project-content:before { content: ""; position: absolute; left: 20px; top: 0; bottom: 24px; border-left: 1px solid var(--line); pointer-events: none; }
+ .goal-mode-list .projects-list>.project-card[open]>.project-content:before { left: 28px; }
+ .goal-mode-list .project-content>.task-row:before { border-left: 0; border-bottom-left-radius: 0; top: 50%; height: 0; }
+ .goal-mode-list .project-add-step { position: relative; }
+ .goal-mode-list .project-add-step:before { content: ""; position: absolute; left: -28px; top: 50%; width: 16px; border-top: 1px solid var(--line); pointer-events: none; }
+ .goal-mode-list .projects-list .task-row>.check-button { margin-right: 12px; }
+ .goal-mode-list .project-content>.project-card>summary>.lucide-folder { margin-right: 12px; }
+ .goal-mode-list .project-content>.project-card>summary>.project-chevron { background: #fff; }
+}
