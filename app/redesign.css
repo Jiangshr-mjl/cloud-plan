@@ -3964,3 +3964,9 @@ h1,h2,h3 {
 .week-focus .project-content:has(>.project-actions>.project-settings[open])>.weekly-quick-add{margin-right:0}
 
 .weekly-quick-add[hidden]{display:none}
+/* Keep a weekly focus and its subtasks visually connected. */
+.week-focus .weekly-goal>.task-row{border-bottom:0;padding-bottom:4px}
+.week-focus .weekly-subtask-heading{padding-top:0;padding-bottom:2px}
+.week-focus .weekly-subtask-heading>.text-button{color:var(--muted);font-size:13px;min-height:44px;padding-block:6px}
+.week-focus .weekly-subtask-heading>.text-button:hover{color:var(--blue,#2167b5)}
+.week-focus .weekly-subtasks{border-left-color:rgb(33 103 181 / 12%)}
