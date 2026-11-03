@@ -3962,3 +3962,5 @@ h1,h2,h3 {
 .week-focus .project-parent-picker{width:100%;min-width:0}
 .week-focus .project-parent-picker select{width:100%;max-width:100%;min-width:0}
 .week-focus .project-content:has(>.project-actions>.project-settings[open])>.weekly-quick-add{margin-right:0}
+
+.weekly-quick-add[hidden]{display:none}

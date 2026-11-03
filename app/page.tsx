@@ -316,8 +316,8 @@ export default function Planner() {
     const q = QUADRANTS[target];
     void mutate({ type: "edit", id: task.id, changes: { important: q.important, urgent: q.urgent } }, undefined, current.revision);
   }
-  function quickSubtask(parent: Task) {
-    return <QuickSubtask parentTitle={parent.title} disabled={disabled || !!parent.completedAt} onAdd={(title,accepted)=>void mutate({type:"create",task:{id:crypto.randomUUID(),kind:"step",parentId:parent.id,title,notes:"",plannedDate:null,dueDate:parent.kind === "goal" ? parent.dueDate : null,important:true,urgent:false,order:Math.min(1000000,Math.max(0,...tasks.map(t=>t.order))+1)}},()=>{setExpanded(prev=>new Set(prev).add(parent.id));accepted();})}/>;
+  function quickSubtask(parent: Task, hidden = false) {
+    return <QuickSubtask hidden={hidden} parentTitle={parent.title} disabled={disabled || !!parent.completedAt} onAdd={(title,accepted)=>void mutate({type:"create",task:{id:crypto.randomUUID(),kind:"step",parentId:parent.id,title,notes:"",plannedDate:null,dueDate:parent.kind === "goal" ? parent.dueDate : null,important:true,urgent:false,order:Math.min(1000000,Math.max(0,...tasks.map(t=>t.order))+1)}},()=>{setExpanded(prev=>new Set(prev).add(parent.id));accepted();})}/>;
   }
   function weeklyCard(goal: Task) {
     const steps = sorted(tasks.filter(t => t.parentId === goal.id));
@@ -329,7 +329,7 @@ export default function Planner() {
         <button className="text-button" aria-expanded={open} aria-label={`展开子任务：${goal.title}`} onClick={() => setExpanded(prev => { const next = new Set(prev); if (next.has(goal.id)) next.delete(goal.id); else next.add(goal.id); return next; })}>{open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}{steps.length ? `${count} / ${steps.length} 子任务完成` : "子任务"}</button>
 
       </div>
-      {quickSubtask(goal)}
+      {quickSubtask(goal, !open)}
       {open && <div className="weekly-subtasks">{steps.map(t => row(t, undefined, 0, true, true, true, true))}{!steps.length && <p className="week-empty">暂无子任务</p>}</div>}
     </article>;
   }

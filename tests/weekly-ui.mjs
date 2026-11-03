@@ -18,6 +18,14 @@ try{for(const width of [1360,390,320]){
  const input=page.getByRole('textbox',{name:`添加子任务：${root.title}`,exact:true});
  for(const title of ['复现计算流程','检查误差']){await input.fill(title);await input.press('Enter');await page.getByRole('button',{name:`编辑：${title}`,exact:true}).waitFor();assert.equal(await input.inputValue(),'');}
  const winput=page.getByRole('textbox',{name:'添加子任务：本周阅读',exact:true});
+ assert.equal(await winput.count(),0);
+ const toggle=page.getByRole('button',{name:'展开子任务：本周阅读',exact:true});
+ await toggle.click();
+ await winput.fill('保留未添加的草稿');
+ await toggle.click();
+ assert.equal(await winput.count(),0);
+ await toggle.click();
+ assert.equal(await winput.inputValue(),'保留未添加的草稿');
  await winput.fill('整理阅读笔记');await page.getByRole('button',{name:'确认添加子任务：本周阅读'}).click();
  await page.getByRole('button',{name:'编辑：整理阅读笔记',exact:true}).waitFor();
  assert.equal(await page.locator('.week-focus .task-meta').filter({hasText:root.title}).count(),0);
